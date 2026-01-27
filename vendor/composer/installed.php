@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'laravel/laravel',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'ab010c38026eb6fbbfbfaf4effe87e6adc9ecdb7',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -388,15 +388,6 @@
                 0 => '*',
             ),
         ),
-        'laravel-notification-channels/telegram' => array(
-            'pretty_version' => '5.0.0',
-            'version' => '5.0.0.0',
-            'reference' => 'd647f0ab28c7717ef85c0c843e95f25b1c7dc498',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../laravel-notification-channels/telegram',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
         'laravel/fortify' => array(
             'pretty_version' => 'v1.21.5',
             'version' => '1.21.5.0',
@@ -425,9 +416,9 @@
             'dev_requirement' => false,
         ),
         'laravel/laravel' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'ab010c38026eb6fbbfbfaf4effe87e6adc9ecdb7',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

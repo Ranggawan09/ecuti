@@ -16,8 +16,13 @@ class DatabaseSeeder extends Seeder
     {
 
         $this->call([
-            UsersTableSeeder::class,
-            PengajuansTableSeeder::class,
+            UserSeeder::class,
+            EmployeeSeeder::class,
+            LeaveTypeSeeder::class,
+            LeaveBalanceSeeder::class,
+            LeaveRequestSeeder::class,
+            ApprovalSeeder::class,
+            //PengajuansTableSeeder::class,
         ]);
     }
 }

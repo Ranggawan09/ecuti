@@ -1,59 +1,147 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\UserOPDController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| AUTH
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
-
 Route::redirect('/', 'login');
 
-Route::middleware(['auth:sanctum'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| PEGAWAI
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:pegawai'])
+    ->prefix('pegawai')
+    ->as('pegawai.')
+    ->group(function () {
 
-    Route::middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('/dashboard', fn() => view('pages.pegawai.dashboard'))
+            ->name('dashboard');
 
-        // Route untuk pengajuan dengan role admin
-        Route::post('/pengajuan/{id}/approve', [AdminController::class, 'approve'])->name('pengajuan.approve');
-        Route::post('/pengajuan/{id}/reject', [AdminController::class, 'reject'])->name('pengajuan.reject');
-        Route::post('/admin/pengajuan/update/{id}', [AdminController::class, 'update'])->name('admin.pengajuan.update');
-        Route::post('/admin/pengajuan/updateProgress/{id}', [AdminController::class, 'updateProgress'])->name('admin.pengajuan.updateProgress');
-        Route::get('/admin/pengajuan/getProgress/{id}', [AdminController::class, 'getProgress'])->name('admin.pengajuan.getProgress');
-        Route::post('/admin/simpan-ke-riwayat/{id}', [AdminController::class, 'simpanKeRiwayat'])->name('admin.simpanKeRiwayat');
+        // Leave Requests
+        Route::resource('leave-requests', 
+            \App\Http\Controllers\Pegawai\LeaveRequestController::class
+        );
 
-
-        // Route admin dashboard
-        Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-
-        // Route pengajuan daftar dan tindak lanjut
-        Route::get('/admin/pengajuan/daftar-pengajuan', [AdminController::class, 'daftarPengajuan'])->name('admin.daftarPengajuan');
-        Route::get('/admin/pengajuan/tindak-lanjut', [AdminController::class, 'tindakLanjut'])->name('admin.tindakLanjut');
-
-        // Route riwayat
-        Route::get('/admin/riwayat', [AdminController::class, 'riwayat'])->name('admin.riwayat');
-        Route::get('/admin/riwayat/detail-riwayat/{id}', [AdminController::class, 'detail_riwayat'])->name('admin.detail.riwayat');
-        Route::get('/admin/riwayat/{id}/print', [AdminController::class, 'print'])->name('admin.pengajuan.print');
-
-        // Route detail tindak lanjut
-        Route::get('/admin/pengajuan/tindak-lanjut/detail-tindak-lanjut/{id}', [AdminController::class, 'detail'])->name('admin.detail.tindakLanjut');
+        // Leave Balance
+        Route::get('leave-balances', 
+            [\App\Http\Controllers\Pegawai\LeaveBalanceController::class, 'index']
+        )->name('leave-balances.index');
     });
 
-    Route::middleware(['auth', 'role:user_opd'])->group(function () {
-        Route::get('/user-opd/dashboard', [UserOPDController::class, 'dashboard'])->name('user_opd.dashboard');
-        Route::get('/user-opd/daftar-pengajuan', [UserOPDController::class, 'daftarPengajuan'])->name('user_opd.daftarPengajuan');
-        Route::get('/user-opd/detail-pengajuan/{id}', [UserOPDController::class, 'detailPengajuan'])->name('user_opd.detailPengajuan');
-        Route::delete('/user-opd/{id}', [UserOPDController::class, 'destroy'])->name('user_opd.destroy');
-        Route::get('/user-opd/tambah-pengajuan', [UserOPDController::class, 'tambahPengajuan'])->name('user_opd.tambahPengajuan');
-        Route::post('/user-opd/tambah-pengajuan', [UserOPDController::class, 'store'])->name('pengajuan.store');
-        Route::get('/user-opd/ubah-pengajuan/{pengajuan}', [UserOPDController::class, 'ubahPengajuan'])->name('user_opd.ubahPengajuan');
-        Route::post('/user-opd/pengajuan/{pengajuan}/update', [UserOPDController::class, 'update'])->name('pengajuan.update');
+/*
+|--------------------------------------------------------------------------
+| ATASAN LANGSUNG
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:atasan_langsung'])
+    ->prefix('atasan-langsung')
+    ->as('atasan-langsung.')
+    ->group(function () {
+
+        Route::get('/dashboard', fn() => view('atasan_langsung.dashboard'))
+            ->name('dashboard');
+
+        // Approval
+        Route::get('approvals', 
+            [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'index']
+        )->name('approvals.index');
+
+        Route::post('approvals/{leaveRequest}/approve', 
+            [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'approve']
+        )->name('approvals.approve');
+
+        Route::post('approvals/{leaveRequest}/reject', 
+            [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'reject']
+        )->name('approvals.reject');
     });
-});
+
+/*
+|--------------------------------------------------------------------------
+| ATASAN TIDAK LANGSUNG
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:atasan_tidak_langsung'])
+    ->prefix('atasan-tidak-langsung')
+    ->as('atasan-tidak-langsung.')
+    ->group(function () {
+
+        Route::get('/dashboard', fn() => view('atasan_tidak_langsung.dashboard'))
+            ->name('dashboard');
+
+        Route::get('approvals', 
+            [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'index']
+        )->name('approvals.index');
+
+        Route::post('approvals/{leaveRequest}/approve', 
+            [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'approve']
+        )->name('approvals.approve');
+
+        Route::post('approvals/{leaveRequest}/reject', 
+            [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'reject']
+        )->name('approvals.reject');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| KEPEGAWAIAN (HR)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:kepegawaian'])
+    ->prefix('kepegawaian')
+    ->as('kepegawaian.')
+    ->group(function () {
+
+        Route::get('/dashboard', fn() => view('kepegawaian.dashboard'))
+            ->name('dashboard');
+
+        Route::get('leave-requests', 
+            [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'index']
+        )->name('leave-requests.index');
+
+        Route::get('leave-requests/{leaveRequest}', 
+            [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'show']
+        )->name('leave-requests.show');
+
+        // Master Leave Type
+        Route::resource('leave-types', 
+            \App\Http\Controllers\Kepegawaian\LeaveTypeController::class
+        );
+
+        // Leave Balance
+        Route::resource('leave-balances', 
+            \App\Http\Controllers\Kepegawaian\LeaveBalanceController::class
+        )->only(['index', 'store', 'update']);
+    });
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->as('admin.')
+    ->group(function () {
+
+        Route::get('/dashboard', fn() => view('admin.dashboard'))
+            ->name('dashboard');
+
+        // User & Employee
+        Route::resource('users', 
+            \App\Http\Controllers\Admin\UserController::class
+        );
+
+        Route::resource('employees', 
+            \App\Http\Controllers\Admin\EmployeeController::class
+        );
+
+        // Logs
+        Route::get('activity-logs', 
+            [\App\Http\Controllers\Admin\ActivityLogController::class, 'index']
+        )->name('activity-logs.index');
+    });

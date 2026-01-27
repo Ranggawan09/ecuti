@@ -14,16 +14,36 @@ class CreateUsersTable extends Migration
     public function up()
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 255);
-            $table->string('email', 255)->unique();
-            $table->string('alamat', 255)->nullable();
-            $table->string('role', 255);
-            $table->string('password', 255);
-            $table->rememberToken();
-            $table->string('profile_photo_path', 2048)->nullable();
-            $table->timestamps();
-        });
+        $table->id();
+
+        // Identitas dasar
+        $table->string('name');
+        $table->string('nip')->unique();
+
+        // Kontak
+        $table->string('email')->nullable()->unique();
+        $table->string('phone_number')->nullable();
+
+        // Autentikasi
+        $table->string('password');
+
+        // Role & akses
+        $table->enum('role', [
+            'pegawai',
+            'atasan_langsung',
+            'atasan_tidak_langsung',
+            'kepegawaian',
+            'admin'
+        ]);
+
+        // Profil
+        $table->string('profile_photo_path')->nullable();
+
+        // Standar Laravel
+        $table->timestamp('email_verified_at')->nullable();
+        $table->rememberToken();
+        $table->timestamps();
+    });
     }
 
     /**
