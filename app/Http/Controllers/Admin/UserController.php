@@ -12,7 +12,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with('employee')->get();
-        return view('admin.users.index', compact('users'));
+        return view('pages.admin.users.index', compact('users'));
     }
 
     public function store(Request $request)

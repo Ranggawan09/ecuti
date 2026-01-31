@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -8,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::redirect('/', 'login');
+Route::middleware(['auth:sanctum'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
@@ -43,7 +45,7 @@ Route::middleware(['auth', 'role:atasan_langsung'])
     ->as('atasan-langsung.')
     ->group(function () {
 
-        Route::get('/dashboard', fn() => view('atasan_langsung.dashboard'))
+        Route::get('/dashboard', fn() => view('pages.atasan_langsung.dashboard'))
             ->name('dashboard');
 
         // Approval
@@ -70,7 +72,7 @@ Route::middleware(['auth', 'role:atasan_tidak_langsung'])
     ->as('atasan-tidak-langsung.')
     ->group(function () {
 
-        Route::get('/dashboard', fn() => view('atasan_tidak_langsung.dashboard'))
+        Route::get('/dashboard', fn() => view('pages.atasan_tidak_langsung.dashboard'))
             ->name('dashboard');
 
         Route::get('approvals', 
@@ -96,7 +98,7 @@ Route::middleware(['auth', 'role:kepegawaian'])
     ->as('kepegawaian.')
     ->group(function () {
 
-        Route::get('/dashboard', fn() => view('kepegawaian.dashboard'))
+        Route::get('/dashboard', fn() => view('pages.kepegawaian.dashboard'))
             ->name('dashboard');
 
         Route::get('leave-requests', 
@@ -128,8 +130,37 @@ Route::middleware(['auth', 'role:admin'])
     ->as('admin.')
     ->group(function () {
 
-        Route::get('/dashboard', fn() => view('admin.dashboard'))
+        Route::get('/dashboard', fn() => view('pages.admin.dashboard.dashboard'))
             ->name('dashboard');
+
+        Route::get('/leave-types', fn() => view('pages.admin.leave-types.index'))
+            ->name('leave-types');
+
+        Route::get('/users', fn() => view('pages.admin.users.index'))
+            ->name('users');
+
+
+        
+
+        // Route untuk pengajuan dengan role admin
+        Route::post('/pengajuan/{id}/approve', [AdminController::class, 'approve'])->name('pengajuan.approve');
+        Route::post('/pengajuan/{id}/reject', [AdminController::class, 'reject'])->name('pengajuan.reject');
+        Route::post('/admin/pengajuan/update/{id}', [AdminController::class, 'update'])->name('admin.pengajuan.update');
+        Route::post('/admin/pengajuan/updateProgress/{id}', [AdminController::class, 'updateProgress'])->name('admin.pengajuan.updateProgress');
+        Route::get('/admin/pengajuan/getProgress/{id}', [AdminController::class, 'getProgress'])->name('admin.pengajuan.getProgress');
+        Route::post('/admin/simpan-ke-riwayat/{id}', [AdminController::class, 'simpanKeRiwayat'])->name('admin.simpanKeRiwayat');
+
+        // Route pengajuan daftar dan tindak lanjut
+        Route::get('/admin/pengajuan/daftar-pengajuan', [AdminController::class, 'daftarPengajuan'])->name('admin.daftarPengajuan');
+        Route::get('/admin/pengajuan/tindak-lanjut', [AdminController::class, 'tindakLanjut'])->name('admin.tindakLanjut');
+
+        // Route riwayat
+        Route::get('/admin/riwayat', [AdminController::class, 'riwayat'])->name('admin.riwayat');
+        Route::get('/admin/riwayat/detail-riwayat/{id}', [AdminController::class, 'detail_riwayat'])->name('admin.detail.riwayat');
+        Route::get('/admin/riwayat/{id}/print', [AdminController::class, 'print'])->name('admin.pengajuan.print');
+
+        // Route detail tindak lanjut
+        Route::get('/admin/pengajuan/tindak-lanjut/detail-tindak-lanjut/{id}', [AdminController::class, 'detail'])->name('admin.detail.tindakLanjut');
 
         // User & Employee
         Route::resource('users', 
@@ -145,3 +176,5 @@ Route::middleware(['auth', 'role:admin'])
             [\App\Http\Controllers\Admin\ActivityLogController::class, 'index']
         )->name('activity-logs.index');
     });
+
+});
