@@ -133,12 +133,15 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/dashboard', fn() => view('pages.admin.dashboard.dashboard'))
             ->name('dashboard');
 
-        Route::get('/leave-types', fn() => view('pages.admin.leave-types.index'))
-            ->name('leave-types');
-
         // export harus di atas resource, kalau di bawah akan ditangkap sebagai show({id} = 'export')
         Route::get('users/export', [App\Http\Controllers\Admin\UserController::class, 'export'])
             ->name('users.export');
+
+        Route::get('leave-types/export', [App\Http\Controllers\Admin\LeaveTypeController::class, 'export'])
+            ->name('leave-types.export');
+
+        Route::resource('leave-types', App\Http\Controllers\Admin\LeaveTypeController::class)
+            ->only(['index', 'store', 'update', 'destroy']);
 
         // User & Employee
         Route::resource('users', 

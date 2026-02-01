@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class LeaveType extends Model
 {
@@ -15,12 +15,11 @@ class LeaveType extends Model
         'deduct_balance',
     ];
 
-    protected $casts = [
-        'deduct_balance' => 'boolean',
-    ];
-
-    public function leaveRequests()
+    protected function casts(): array
     {
-        return $this->hasMany(LeaveRequest::class);
+        return [
+            'deduct_balance' => 'boolean',
+            'max_days' => 'integer',
+        ];
     }
 }

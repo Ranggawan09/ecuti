@@ -226,10 +226,10 @@
                         </a>
                     </li>
                     <!-- Master Jenis Cuti -->
-                    <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 @if(Route::is('admin.leave-types')){{ 'bg-gradient-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' }}@endif">
-                        <a class="block text-gray-800 dark:text-gray-100 truncate transition @if(!Route::is('admin.leave-types')){{ 'hover:text-gray-900 dark:hover:text-white' }}@endif" href="{{ route('admin.leave-types') }}">
+                    <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 @if(Route::is('admin.leave-types.index')){{ 'bg-gradient-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' }}@endif">
+                        <a class="block text-gray-800 dark:text-gray-100 truncate transition @if(!Route::is('admin.leave-types.index')){{ 'hover:text-gray-900 dark:hover:text-white' }}@endif" href="{{ route('admin.leave-types.index') }}">
                             <div class="flex items-center">
-                                <svg class="shrink-0 fill-current @if(Route::is('admin.leave-types')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                                <svg class="shrink-0 fill-current @if(Route::is('admin.leave-types.index')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                                     <path d="M14 0H2C.9 0 0 .9 0 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2ZM2 14V2h12v12H2Z" />
                                     <path d="M4 8h3V5H4v3Zm0 4h3V9H4v3Zm5-8v3h3V4H9Zm0 4h3v3H9V8Z" />
                                 </svg>
