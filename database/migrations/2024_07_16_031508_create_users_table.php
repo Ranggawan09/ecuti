@@ -17,12 +17,12 @@ class CreateUsersTable extends Migration
         $table->id();
 
         // Identitas dasar
-        $table->string('name');
+        $table->string('nama');
         $table->string('nip')->unique();
 
         // Kontak
         $table->string('email')->nullable()->unique();
-        $table->string('phone_number')->nullable();
+        $table->string('whatsapp')->nullable();
 
         // Autentikasi
         $table->string('password');

@@ -136,31 +136,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/leave-types', fn() => view('pages.admin.leave-types.index'))
             ->name('leave-types');
 
-        Route::get('/users', fn() => view('pages.admin.users.index'))
-            ->name('users');
-
-
-        
-
-        // Route untuk pengajuan dengan role admin
-        Route::post('/pengajuan/{id}/approve', [AdminController::class, 'approve'])->name('pengajuan.approve');
-        Route::post('/pengajuan/{id}/reject', [AdminController::class, 'reject'])->name('pengajuan.reject');
-        Route::post('/admin/pengajuan/update/{id}', [AdminController::class, 'update'])->name('admin.pengajuan.update');
-        Route::post('/admin/pengajuan/updateProgress/{id}', [AdminController::class, 'updateProgress'])->name('admin.pengajuan.updateProgress');
-        Route::get('/admin/pengajuan/getProgress/{id}', [AdminController::class, 'getProgress'])->name('admin.pengajuan.getProgress');
-        Route::post('/admin/simpan-ke-riwayat/{id}', [AdminController::class, 'simpanKeRiwayat'])->name('admin.simpanKeRiwayat');
-
-        // Route pengajuan daftar dan tindak lanjut
-        Route::get('/admin/pengajuan/daftar-pengajuan', [AdminController::class, 'daftarPengajuan'])->name('admin.daftarPengajuan');
-        Route::get('/admin/pengajuan/tindak-lanjut', [AdminController::class, 'tindakLanjut'])->name('admin.tindakLanjut');
-
-        // Route riwayat
-        Route::get('/admin/riwayat', [AdminController::class, 'riwayat'])->name('admin.riwayat');
-        Route::get('/admin/riwayat/detail-riwayat/{id}', [AdminController::class, 'detail_riwayat'])->name('admin.detail.riwayat');
-        Route::get('/admin/riwayat/{id}/print', [AdminController::class, 'print'])->name('admin.pengajuan.print');
-
-        // Route detail tindak lanjut
-        Route::get('/admin/pengajuan/tindak-lanjut/detail-tindak-lanjut/{id}', [AdminController::class, 'detail'])->name('admin.detail.tindakLanjut');
+        // export harus di atas resource, kalau di bawah akan ditangkap sebagai show({id} = 'export')
+        Route::get('users/export', [App\Http\Controllers\Admin\UserController::class, 'export'])
+            ->name('users.export');
 
         // User & Employee
         Route::resource('users', 

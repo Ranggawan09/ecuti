@@ -6,3 +6,110 @@
 @import 'additional-styles/flatpickr.css';
 
 @import 'tailwindcss/utilities';
+
+/* Custom Styles untuk Sistem Cuti - Tambahkan ke resources/css/app.css */
+
+/* Scrollbar styling */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Sidebar expanded state */
+.sidebar-expanded .lg\:sidebar-expanded\:block {
+    display: block;
+}
+
+.sidebar-expanded .lg\:sidebar-expanded\:hidden {
+    display: none;
+}
+
+.sidebar-expanded .lg\:sidebar-expanded\:opacity-100 {
+    opacity: 1;
+}
+
+.sidebar-expanded .lg\:sidebar-expanded\:\!w-64 {
+    width: 16rem !important;
+}
+
+/* Button styles */
+.btn {
+    @apply inline-flex items-center justify-center rounded-lg leading-5 px-3 py-2 border border-transparent shadow-sm transition duration-150 ease-in-out;
+}
+
+.btn-sm {
+    @apply inline-flex items-center justify-center text-sm rounded-lg leading-5 px-2 py-1 border border-transparent shadow-sm transition duration-150 ease-in-out;
+}
+
+/* Form styles */
+.form-input,
+.form-textarea,
+.form-select {
+    @apply w-full rounded-lg border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:border-violet-300 dark:focus:border-violet-600 focus:ring-0;
+}
+
+.form-checkbox {
+    @apply rounded border-gray-300 dark:border-gray-600 text-violet-500 focus:ring-violet-500 focus:ring-offset-0 dark:bg-gray-700 dark:checked:bg-violet-500;
+}
+
+/* Table styles */
+table {
+    @apply w-full;
+}
+
+table th {
+    @apply text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20;
+}
+
+table td {
+    @apply text-sm text-gray-800 dark:text-gray-100;
+}
+
+/* Badge utilities */
+.badge {
+    @apply inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+/* Loading state */
+.loading {
+    @apply opacity-50 pointer-events-none;
+}
+
+/* Smooth transitions */
+* {
+    @apply transition-colors duration-150;
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+    html {
+        color-scheme: dark;
+    }
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* Alpine.js transitions */
+[x-cloak] {
+    display: none !important;
+}
