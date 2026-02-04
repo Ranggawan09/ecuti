@@ -59,7 +59,7 @@ class UsersExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $user->email,
             $user->whatsapp ?? '-',
             $roleMap[$user->role] ?? $user->role,
-            $user->created_at->format('d/m/Y H:i'),
+            $user->created_at ? $user->created_at->format('d/m/Y H:i') : '-',
         ];
     }
 

@@ -101,13 +101,15 @@ Route::middleware(['auth', 'role:kepegawaian'])
         Route::get('/dashboard', fn() => view('pages.kepegawaian.dashboard'))
             ->name('dashboard');
 
-        Route::get('leave-requests', 
-            [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'index']
-        )->name('leave-requests.index');
+        // Export route must be before resource routes
+        Route::get('leave-requests/export', 
+            [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'export']
+        )->name('leave-requests.export');
 
-        Route::get('leave-requests/{leaveRequest}', 
-            [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'show']
-        )->name('leave-requests.show');
+        // Leave Requests CRUD
+        Route::resource('leave-requests', 
+            \App\Http\Controllers\Kepegawaian\LeaveRequestController::class
+        );
 
         // Master Leave Type
         Route::resource('leave-types', 

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\LeaveRequest;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\Pengajuan;
@@ -22,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('*', function ($view) {
-            $pendingCount = Pengajuan::where('status', 'Pending')->count();
+            $pendingCount = LeaveRequest::where('status', 'draft')->count();
             $view->with('pendingCount', $pendingCount);
         });
     }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
@@ -134,16 +135,27 @@ class UserController extends Controller
         return Excel::download(new UsersExport, 'users-' . date('Y-m-d') . '.xlsx');
     }
 
-    /**
-     * Export to PDF
-     */
     private function exportPdf()
     {
-        $users = User::orderBy('nama')->get();
-        
-        $pdf = Pdf::loadView('pages.admin.users.pdf', compact('users'))
-            ->setPaper('a4', 'landscape');
-        
-        return $pdf->download('users-' . date('Y-m-d') . '.pdf');
+        try {
+            // Increase memory limit and execution time for PDF generation
+            ini_set('memory_limit', '512M');
+            ini_set('max_execution_time', '300');
+            
+            $users = User::orderBy('nama')->get();
+            
+            $pdf = Pdf::loadView('pages.admin.users.pdf', compact('users'))
+                ->setPaper('a4', 'landscape')
+                ->setOption('isHtml5ParserEnabled', true)
+                ->setOption('isRemoteEnabled', true)
+                ->setOption('defaultFont', 'Arial');
+            
+            return $pdf->download('users-' . date('Y-m-d') . '.pdf');
+        } catch (\Exception $e) {
+            \Log::error('PDF Export Error: ' . $e->getMessage());
+            
+            return redirect()->back()
+                ->with('error', 'Gagal mengexport PDF. Error: ' . $e->getMessage());
+        }
     }
 }

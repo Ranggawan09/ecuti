@@ -121,7 +121,7 @@
                         {{ $roleMap[$user->role] ?? $user->role }}
                     </span>
                 </td>
-                <td>{{ $user->created_at->format('d/m/Y') }}</td>
+                <td>{{ $user->created_at ? $user->created_at->format('d/m/Y') : '-' }}</td>
             </tr>
             @endforeach
         </tbody>
