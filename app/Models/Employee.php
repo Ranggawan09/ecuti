@@ -14,6 +14,8 @@ class Employee extends Model
         'jabatan',
         'golongan',
         'unit_kerja',
+        'masa_kerja_tahun',
+        'masa_kerja_bulan',
         'atasan_langsung_id',
         'atasan_tidak_langsung_id',
     ];
