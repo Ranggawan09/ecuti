@@ -1,2 +1,2 @@
 # ecuti
-Pengajuan Cuti Pengadilan Agama
+Pengajuan Cuti Pengadilan Negeri
