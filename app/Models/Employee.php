@@ -20,6 +20,11 @@ class Employee extends Model
         'atasan_tidak_langsung_id',
     ];
 
+    protected $casts = [
+        'masa_kerja_tahun' => 'integer',
+        'masa_kerja_bulan' => 'integer',
+    ];
+
     /* ================== RELATIONS ================== */
 
     public function user()

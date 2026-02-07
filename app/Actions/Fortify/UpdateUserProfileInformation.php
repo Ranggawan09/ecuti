@@ -10,20 +10,15 @@ use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
-    /**
-     * Validate and update the given user's profile information.
-     *
-     * @param  array<string, mixed>  $input
-     */
     public function update(User $user, array $input): void
     {
         Validator::make($input, [
             'nama' => ['required', 'string', 'max:255'],
-            'nip' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'nip' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'whatsapp' => ['nullable', 'string', 'max:20'],
             'jabatan' => ['nullable', 'string', 'max:255'],
-            'golongan' => ['nullable', 'string', 'max:255'],
+            'golongan' => ['nullable', 'string', 'max:50'],
             'unit_kerja' => ['nullable', 'string', 'max:255'],
             'masa_kerja_tahun' => ['nullable', 'integer', 'min:0'],
             'masa_kerja_bulan' => ['nullable', 'integer', 'min:0', 'max:11'],
@@ -38,40 +33,28 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user instanceof MustVerifyEmail) {
             $this->updateVerifiedUser($user, $input);
         } else {
+            // Update user data
             $user->forceFill([
                 'nama' => $input['nama'],
                 'nip' => $input['nip'],
                 'email' => $input['email'],
                 'whatsapp' => $input['whatsapp'] ?? null,
             ])->save();
-        }
 
-        // Update or create employee data if any employee fields are provided
-        if ($user->employee) {
-            $user->employee->update([
-                'jabatan' => $input['jabatan'] ?? null,
-                'golongan' => $input['golongan'] ?? null,
-                'unit_kerja' => $input['unit_kerja'] ?? null,
-                'masa_kerja_tahun' => $input['masa_kerja_tahun'] ?? null,
-                'masa_kerja_bulan' => $input['masa_kerja_bulan'] ?? null,
-            ]);
-        } elseif (!empty($input['jabatan']) || !empty($input['golongan']) || !empty($input['unit_kerja'])) {
-            // Create employee record if it doesn't exist and at least one field is provided
-            $user->employee()->create([
-                'jabatan' => $input['jabatan'] ?? '',
-                'golongan' => $input['golongan'] ?? '',
-                'unit_kerja' => $input['unit_kerja'] ?? '',
-                'masa_kerja_tahun' => $input['masa_kerja_tahun'] ?? null,
-                'masa_kerja_bulan' => $input['masa_kerja_bulan'] ?? null,
-            ]);
+            // Update or create employee data
+            $user->employee()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'jabatan' => $input['jabatan'] ?? null,
+                    'golongan' => $input['golongan'] ?? null,
+                    'unit_kerja' => $input['unit_kerja'] ?? null,
+                    'masa_kerja_tahun' => $input['masa_kerja_tahun'] ?? 0,
+                    'masa_kerja_bulan' => $input['masa_kerja_bulan'] ?? 0,
+                ]
+            );
         }
     }
 
-    /**
-     * Update the given verified user's profile information.
-     *
-     * @param  array<string, string>  $input
-     */
     protected function updateVerifiedUser(User $user, array $input): void
     {
         $user->forceFill([
@@ -81,6 +64,18 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'whatsapp' => $input['whatsapp'] ?? null,
             'email_verified_at' => null,
         ])->save();
+
+        // Update or create employee data
+        $user->employee()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'jabatan' => $input['jabatan'] ?? null,
+                'golongan' => $input['golongan'] ?? null,
+                'unit_kerja' => $input['unit_kerja'] ?? null,
+                'masa_kerja_tahun' => $input['masa_kerja_tahun'] ?? 0,
+                'masa_kerja_bulan' => $input['masa_kerja_bulan'] ?? 0,
+            ]
+        );
 
         $user->sendEmailVerificationNotification();
     }
