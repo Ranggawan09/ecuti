@@ -44,15 +44,33 @@ class UserController extends Controller
             'whatsapp' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'role' => ['required', Rule::in(['admin', 'kepegawaian', 'atasan_langsung', 'atasan_tidak_langsung', 'pegawai'])],
+            'atasan_langsung_id' => 'required_if:role,pegawai|nullable|exists:users,id',
+            'atasan_tidak_langsung_id' => 'required_if:role,pegawai|nullable|exists:users,id',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
 
-        User::create($validated);
+        $user = User::create([
+            'nama' => $validated['nama'],
+            'nip' => $validated['nip'],
+            'email' => $validated['email'],
+            'whatsapp' => $validated['whatsapp'],
+            'password' => $validated['password'],
+            'role' => $validated['role'],
+        ]);
+
+        // Create employee record if role is pegawai
+        if ($validated['role'] === 'pegawai') {
+            $user->employee()->create([
+                'atasan_langsung_id' => $validated['atasan_langsung_id'],
+                'atasan_tidak_langsung_id' => $validated['atasan_tidak_langsung_id'],
+            ]);
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User berhasil ditambahkan.');
     }
+
 
     /**
      * Display the specified resource.
@@ -82,6 +100,8 @@ class UserController extends Controller
             'whatsapp' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
             'role' => ['required', Rule::in(['admin', 'kepegawaian', 'atasan_langsung', 'atasan_tidak_langsung', 'pegawai'])],
+            'atasan_langsung_id' => 'required_if:role,pegawai|nullable|exists:users,id',
+            'atasan_tidak_langsung_id' => 'required_if:role,pegawai|nullable|exists:users,id',
         ]);
 
         if (!empty($validated['password'])) {
@@ -90,11 +110,34 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        $user->update($validated);
+        $user->update([
+            'nama' => $validated['nama'],
+            'nip' => $validated['nip'],
+            'email' => $validated['email'],
+            'whatsapp' => $validated['whatsapp'],
+            'password' => $validated['password'] ?? $user->password,
+            'role' => $validated['role'],
+        ]);
+
+        // Handle employee record based on role
+        if ($validated['role'] === 'pegawai') {
+            // Create or update employee record
+            $user->employee()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'atasan_langsung_id' => $validated['atasan_langsung_id'],
+                    'atasan_tidak_langsung_id' => $validated['atasan_tidak_langsung_id'],
+                ]
+            );
+        } else {
+            // Delete employee record if role is changed from pegawai
+            $user->employee()->delete();
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User berhasil diupdate.');
     }
+
 
     /**
      * Remove the specified resource from storage.

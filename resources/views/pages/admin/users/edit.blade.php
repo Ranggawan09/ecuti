@@ -115,6 +115,53 @@
                         @enderror
                     </div>
 
+                    <!-- Supervisor Fields (Only for Pegawai) -->
+                    <div id="supervisorFields" class="space-y-6" style="display: none;">
+                        <!-- Atasan Langsung -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="atasan_langsung_id">
+                                Atasan Langsung <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                id="atasan_langsung_id"
+                                name="atasan_langsung_id"
+                                class="form-select w-full @error('atasan_langsung_id') border-red-300 @enderror"
+                            >
+                                <option value="">Pilih Atasan Langsung</option>
+                                @foreach(\App\Models\User::whereIn('role', ['atasan_langsung', 'atasan_tidak_langsung'])->orderBy('nama')->get() as $supervisor)
+                                    <option value="{{ $supervisor->id }}" {{ old('atasan_langsung_id', $user->employee->atasan_langsung_id ?? '') == $supervisor->id ? 'selected' : '' }}>
+                                        {{ $supervisor->nama }} ({{ $supervisor->nip }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('atasan_langsung_id')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Atasan Tidak Langsung -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="atasan_tidak_langsung_id">
+                                Atasan Tidak Langsung <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                id="atasan_tidak_langsung_id"
+                                name="atasan_tidak_langsung_id"
+                                class="form-select w-full @error('atasan_tidak_langsung_id') border-red-300 @enderror"
+                            >
+                                <option value="">Pilih Atasan Tidak Langsung</option>
+                                @foreach(\App\Models\User::whereIn('role', ['atasan_langsung', 'atasan_tidak_langsung'])->orderBy('nama')->get() as $supervisor)
+                                    <option value="{{ $supervisor->id }}" {{ old('atasan_tidak_langsung_id', $user->employee->atasan_tidak_langsung_id ?? '') == $supervisor->id ? 'selected' : '' }}>
+                                        {{ $supervisor->nama }} ({{ $supervisor->nip }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('atasan_tidak_langsung_id')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
                     <!-- Divider -->
                     <div class="border-t border-gray-200 dark:border-gray-700/60 pt-6">
                         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Ubah Password (Opsional)</h3>
@@ -166,4 +213,34 @@
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelect = document.getElementById('role');
+        const supervisorFields = document.getElementById('supervisorFields');
+        const atasanLangsungSelect = document.getElementById('atasan_langsung_id');
+        const atasanTidakLangsungSelect = document.getElementById('atasan_tidak_langsung_id');
+
+        function toggleSupervisorFields() {
+            if (roleSelect.value === 'pegawai') {
+                supervisorFields.style.display = 'block';
+                atasanLangsungSelect.setAttribute('required', 'required');
+                atasanTidakLangsungSelect.setAttribute('required', 'required');
+            } else {
+                supervisorFields.style.display = 'none';
+                atasanLangsungSelect.removeAttribute('required');
+                atasanTidakLangsungSelect.removeAttribute('required');
+                atasanLangsungSelect.value = '';
+                atasanTidakLangsungSelect.value = '';
+            }
+        }
+
+        // Initialize on page load
+        toggleSupervisorFields();
+
+        // Listen for changes
+        roleSelect.addEventListener('change', toggleSupervisorFields);
+    });
+</script>
+
 </x-layouts.app>
