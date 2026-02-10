@@ -4,7 +4,7 @@
     <!-- Page header -->
     <div class="mb-8">
         <div class="flex items-center gap-3 mb-4">
-            <a href="{{ route('kepegawaian.leave-requests.index') }}" class="btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-300">
+            <a href="{{ route('pegawai.leave-requests.index') }}" class="btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-300">
                 <svg class="fill-current shrink-0 mr-2" width="16" height="16" viewBox="0 0 16 16">
                     <path d="M6.6 13.4L1.2 8l5.4-5.4 1.4 1.4L4.4 7.6h10.4v2H4.4l3.6 3.6-1.4 1.4z" />
                 </svg>
@@ -135,11 +135,11 @@
                         @foreach($leaveRequest->approvals as $approval)
                         <div class="flex items-start gap-3 bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg">
                             <div class="w-10 h-10 shrink-0 flex items-center justify-center bg-violet-100 dark:bg-violet-500/30 rounded-full">
-                                <span class="text-sm font-medium text-violet-600 dark:text-violet-400">{{ substr($approval->user->nama ?? '-', 0, 1) }}</span>
+                                <span class="text-sm font-medium text-violet-600 dark:text-violet-400">{{ substr($approval->approver->nama ?? '-', 0, 1) }}</span>
                             </div>
                             <div class="flex-1">
-                                <div class="font-medium text-gray-800 dark:text-gray-100">{{ $approval->user->nama ?? '-' }}</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ $approval->user->role ?? '-' }}</div>
+                                <div class="font-medium text-gray-800 dark:text-gray-100">{{ $approval->approver->nama ?? '-' }}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ $approval->approver->role ?? '-' }}</div>
                                 <div class="mt-2">
                                     <span class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 text-xs {{ $approval->status === 'approved' ? 'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400' }}">
                                         {{ $approval->status === 'approved' ? 'Disetujui' : 'Ditolak' }}
@@ -164,13 +164,13 @@
 
             <!-- Actions -->
             <div class="flex gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700/60">
-                <a href="{{ route('kepegawaian.leave-requests.edit', $leaveRequest) }}" class="btn bg-violet-500 hover:bg-violet-600 text-white">
+                <a href="{{ route('pegawai.leave-requests.edit', $leaveRequest) }}" class="btn bg-violet-500 hover:bg-violet-600 text-white">
                     <svg class="fill-current shrink-0 mr-2" width="16" height="16" viewBox="0 0 16 16">
                         <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4ZM4.6 14H2v-2.6l6-6L10.6 8l-6 6ZM12 6.6 9.4 4 11 2.4 13.6 5 12 6.6Z" />
                     </svg>
                     Edit
                 </a>
-                <form action="{{ route('kepegawaian.leave-requests.destroy', $leaveRequest) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data cuti ini?')">
+                <form action="{{ route('pegawai.leave-requests.destroy', $leaveRequest) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data cuti ini?')">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn bg-red-500 hover:bg-red-600 text-white">

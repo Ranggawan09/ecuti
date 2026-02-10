@@ -1,19 +1,3 @@
-@php
-    $mappedLeaveRequests = $leaveRequests->map(function($lr) {
-        return [
-            'id' => $lr->id,
-            'employee_name' => $lr->employee->user->nama ?? '-',
-            'employee_nip' => $lr->employee->user->nip ?? '-',
-            'leave_type' => $lr->leaveType->name ?? '-',
-            'start_date' => $lr->start_date->format('d/m/Y'),
-            'end_date' => $lr->end_date->format('d/m/Y'),
-            'date_range' => $lr->start_date->format('d/m/Y') . ' - ' . $lr->end_date->format('d/m/Y'),
-            'total_days' => $lr->total_days,
-            'status' => $lr->status
-        ];
-    });
-@endphp
-
 <x-layouts.app>
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto" x-data="leaveRequestsTable()">
 
@@ -22,59 +6,12 @@
 
         <!-- Left: Title -->
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Cuti Pegawai ✨</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Riwayat Cuti ✨</h1>
         </div>
 
         <!-- Right: Actions -->
         <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
             
-            <!-- Export Dropdown -->
-            <div class="relative inline-flex" x-data="{ open: false }">
-                <button
-                    class="btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-300"
-                    aria-haspopup="true"
-                    @click.prevent="open = !open"
-                    :aria-expanded="open"
-                >
-                    <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                        <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm0 12H4V8h4v4Zm4 0H8V8h4v4Zm0-6H4V4h8v2Z" />
-                    </svg>
-                    <span class="ml-2">Export</span>
-                </button>
-                <div
-                    class="origin-top-right z-10 absolute top-full left-0 right-auto min-w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1"
-                    @click.outside="open = false"
-                    @keydown.escape.window="open = false"
-                    x-show="open"
-                    x-transition:enter="transition ease-out duration-200 transform"
-                    x-transition:enter-start="opacity-0 -translate-y-2"
-                    x-transition:enter-end="opacity-100 translate-y-0"
-                    x-transition:leave="transition ease-out duration-200"
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0"
-                    x-cloak
-                >
-                    <ul>
-                        <li>
-                            <a class="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex items-center py-1 px-3" href="{{ route('kepegawaian.leave-requests.export', ['format' => 'excel']) }}" @click="open = false">
-                                <svg class="w-4 h-4 fill-current text-green-500 shrink-0 mr-2" viewBox="0 0 16 16">
-                                    <path d="M9 7h6v2H9V7Zm0 4h6v2H9v-2Zm-9 0h6v2H0v-2Zm0-4h6v2H0V7Zm0-4h6v2H0V3Zm9 0h6v2H9V3Z" />
-                                </svg>
-                                <span>Export to Excel</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex items-center py-1 px-3" href="{{ route('kepegawaian.leave-requests.export', ['format' => 'pdf']) }}" @click="open = false">
-                                <svg class="w-4 h-4 fill-current text-red-500 shrink-0 mr-2" viewBox="0 0 16 16">
-                                    <path d="M9 7h6v2H9V7Zm0 4h6v2H9v-2Zm-9 0h6v2H0v-2Zm0-4h6v2H0V7Zm0-4h6v2H0V3Zm9 0h6v2H9V3Z" />
-                                </svg>
-                                <span>Export to PDF</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
             <!-- Filter Dropdown -->
             <div class="relative inline-flex" x-data="{ open: false }">
                 <button
@@ -103,23 +40,19 @@
                 >
                     <div class="px-3 py-2">
                         <label class="flex items-center py-1">
-                            <input type="checkbox" class="form-checkbox" x-model="columns.nama" checked>
-                            <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">Nama Pegawai</span>
-                        </label>
-                        <label class="flex items-center py-1">
-                            <input type="checkbox" class="form-checkbox" x-model="columns.nip" checked>
-                            <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">NIP</span>
-                        </label>
-                        <label class="flex items-center py-1">
-                            <input type="checkbox" class="form-checkbox" x-model="columns.jenis_cuti" checked>
+                            <input type="checkbox" class="form-checkbox" x-model="columns.jenisCuti" checked>
                             <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">Jenis Cuti</span>
                         </label>
                         <label class="flex items-center py-1">
-                            <input type="checkbox" class="form-checkbox" x-model="columns.tanggal" checked>
-                            <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">Tanggal</span>
+                            <input type="checkbox" class="form-checkbox" x-model="columns.tanggalMulai" checked>
+                            <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">Tanggal Mulai</span>
                         </label>
                         <label class="flex items-center py-1">
-                            <input type="checkbox" class="form-checkbox" x-model="columns.total_hari" checked>
+                            <input type="checkbox" class="form-checkbox" x-model="columns.tanggalSelesai" checked>
+                            <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">Tanggal Selesai</span>
+                        </label>
+                        <label class="flex items-center py-1">
+                            <input type="checkbox" class="form-checkbox" x-model="columns.totalHari" checked>
                             <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">Total Hari</span>
                         </label>
                         <label class="flex items-center py-1">
@@ -130,13 +63,13 @@
                 </div>
             </div>
 
-            <!-- Add button -->
-            <a href="{{ route('kepegawaian.leave-requests.create') }}" class="btn bg-violet-500 hover:bg-violet-600 text-white">
+            <!-- Add leave request button -->
+            <button class="btn bg-violet-500 hover:bg-violet-600 text-white" onclick="window.location='{{ route('pegawai.leave-requests.create') }}'">
                 <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
                     <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1Z" />
                 </svg>
-                <span class="ml-2">Tambah Cuti</span>
-            </a>
+                <span class="ml-2">Ajukan Cuti</span>
+            </button>
         </div>
 
     </div>
@@ -149,7 +82,7 @@
                 id="leave-search"
                 class="form-input w-full pl-9 text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 focus:border-violet-300 dark:focus:border-violet-600"
                 type="search"
-                placeholder="Cari berdasarkan nama pegawai, NIP, jenis cuti, atau status..."
+                placeholder="Cari berdasarkan jenis cuti, status, atau tanggal..."
                 x-model="searchQuery"
                 @input.debounce.300ms="filterLeaveRequests()"
             >
@@ -165,7 +98,7 @@
     <!-- Table -->
     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl relative">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Semua Data Cuti <span class="text-gray-400 dark:text-gray-500 font-medium" x-text="'(' + filteredLeaveRequests.length + ')'"></span></h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Semua Pengajuan Cuti <span class="text-gray-400 dark:text-gray-500 font-medium" x-text="'(' + filteredLeaveRequests.length + ')'"></span></h2>
         </header>
         <div>
 
@@ -175,27 +108,16 @@
                     <!-- Table header -->
                     <thead class="text-xs uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20 border-t border-gray-100 dark:border-gray-700/60">
                         <tr>
-                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
-                                <div class="flex items-center">
-                                    <label class="inline-flex">
-                                        <span class="sr-only">Select all</span>
-                                        <input class="form-checkbox" type="checkbox" x-model="selectAll" @click="toggleSelectAll()">
-                                    </label>
-                                </div>
-                            </th>
-                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.nama">
-                                <div class="font-semibold text-left">Nama Pegawai</div>
-                            </th>
-                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.nip">
-                                <div class="font-semibold text-left">NIP</div>
-                            </th>
-                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.jenis_cuti">
+                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.jenisCuti">
                                 <div class="font-semibold text-left">Jenis Cuti</div>
                             </th>
-                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.tanggal">
-                                <div class="font-semibold text-left">Tanggal</div>
+                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.tanggalMulai">
+                                <div class="font-semibold text-left">Tanggal Mulai</div>
                             </th>
-                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.total_hari">
+                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.tanggalSelesai">
+                                <div class="font-semibold text-left">Tanggal Selesai</div>
+                            </th>
+                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.totalHari">
                                 <div class="font-semibold text-left">Total Hari</div>
                             </th>
                             <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.status">
@@ -210,35 +132,17 @@
                     <tbody class="text-sm">
                         <template x-for="leave in filteredLeaveRequests" :key="leave.id">
                             <tr class="border-b border-gray-100 dark:border-gray-700/60">
-                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
-                                    <div class="flex items-center">
-                                        <label class="inline-flex">
-                                            <span class="sr-only">Select</span>
-                                            <input class="form-checkbox" type="checkbox" :value="leave.id" x-model="selected">
-                                        </label>
-                                    </div>
+                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.jenisCuti">
+                                    <div class="font-medium text-gray-800 dark:text-gray-100" x-text="leave.leave_type_name"></div>
                                 </td>
-                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.nama">
-                                    <div class="flex items-center">
-                                        <div class="w-10 h-10 shrink-0 flex items-center justify-center bg-violet-100 dark:bg-violet-500/30 rounded-full mr-2">
-                                            <span class="text-sm font-medium text-violet-600 dark:text-violet-400" x-text="leave.employee_name.charAt(0).toUpperCase()"></span>
-                                        </div>
-                                        <div class="font-medium text-gray-800 dark:text-gray-100" x-text="leave.employee_name"></div>
-                                    </div>
+                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.tanggalMulai">
+                                    <div class="text-gray-600 dark:text-gray-300" x-text="leave.start_date_formatted"></div>
                                 </td>
-                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.nip">
-                                    <div class="text-gray-600 dark:text-gray-300" x-text="leave.employee_nip"></div>
+                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.tanggalSelesai">
+                                    <div class="text-gray-600 dark:text-gray-300" x-text="leave.end_date_formatted"></div>
                                 </td>
-                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.jenis_cuti">
-                                    <div class="text-gray-600 dark:text-gray-300" x-text="leave.leave_type"></div>
-                                </td>
-                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.tanggal">
-                                    <div class="text-gray-600 dark:text-gray-300" x-text="leave.date_range"></div>
-                                </td>
-                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.total_hari">
-                                    <div class="text-center">
-                                        <span class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300" x-text="leave.total_days + ' hari'"></span>
-                                    </div>
+                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.totalHari">
+                                    <div class="text-gray-600 dark:text-gray-300" x-text="leave.total_days + ' hari'"></div>
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.status">
                                     <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5" 
@@ -255,18 +159,17 @@
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
                                     <div class="flex items-center gap-2">
-                                        <a :href="'/kepegawaian/leave-requests/' + leave.id" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-blue-500" title="View">
+                                        <a :href="'/pegawai/leave-requests/' + leave.id" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-blue-500" title="Lihat Detail">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                                                <path d="M8 2c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6Zm0-2C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Z" />
-                                                <circle cx="8" cy="8" r="3" />
+                                                <path d="M8 3.5c-3.5 0-6.3 2.3-7.5 5.5 1.2 3.2 4 5.5 7.5 5.5s6.3-2.3 7.5-5.5C14.3 5.8 11.5 3.5 8 3.5ZM8 12c-2 0-3.7-1.2-4.5-3 .8-1.8 2.5-3 4.5-3s3.7 1.2 4.5 3c-.8 1.8-2.5 3-4.5 3Zm0-5c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2Z"/>
                                             </svg>
                                         </a>
-                                        <a :href="'/kepegawaian/leave-requests/' + leave.id + '/edit'" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" title="Edit">
+                                        <a :href="'/pegawai/leave-requests/' + leave.id + '/edit'" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" title="Edit">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
                                                 <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4ZM4.6 14H2v-2.6l6-6L10.6 8l-6 6ZM12 6.6 9.4 4 11 2.4 13.6 5 12 6.6Z" />
                                             </svg>
                                         </a>
-                                        <button @click="deleteLeaveRequest(leave.id)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-red-500" title="Delete">
+                                        <button @click="deleteLeaveRequest(leave.id)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-red-500" title="Hapus">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
                                                 <path d="M5 7h2v6H5V7Zm4 0h2v6H9V7Zm3-6v2h4v2h-1v10c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V5H0V3h4V1c0-.6.4-1 1-1h6c.6 0 1 .4 1 1ZM6 2v1h4V2H6Zm7 3H3v9h10V5Z" />
                                             </svg>
@@ -278,7 +181,7 @@
                         
                         <!-- Empty state -->
                         <tr x-show="filteredLeaveRequests.length === 0">
-                            <td colspan="8" class="px-2 first:pl-5 last:pr-5 py-8">
+                            <td colspan="6" class="px-2 first:pl-5 last:pr-5 py-8">
                                 <div class="text-center text-gray-500 dark:text-gray-400">
                                     <svg class="inline-block w-16 h-16 mb-4 fill-current opacity-20" viewBox="0 0 64 64">
                                         <circle cx="32" cy="32" r="32"/>
@@ -286,7 +189,7 @@
                                         <path d="M32 40c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zm0-12c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4z"/>
                                     </svg>
                                     <p class="font-medium text-lg mb-1">Tidak ada data</p>
-                                    <p class="text-sm">Tidak ditemukan data cuti yang sesuai dengan pencarian Anda.</p>
+                                    <p class="text-sm">Tidak ditemukan pengajuan cuti yang sesuai dengan pencarian Anda.</p>
                                 </div>
                             </td>
                         </tr>
@@ -297,41 +200,19 @@
         </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="mt-8">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <nav class="mb-4 sm:mb-0 sm:order-1" role="navigation" aria-label="Navigation">
-                <ul class="flex justify-center">
-                    <li class="ml-3 first:ml-0">
-                        <a class="btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 text-gray-300 dark:text-gray-600" href="#" disabled>&lt;- Previous</a>
-                    </li>
-                    <li class="ml-3 first:ml-0">
-                        <a class="btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" href="#">Next -&gt;</a>
-                    </li>
-                </ul>
-            </nav>
-            <div class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
-                Showing <span class="font-medium text-gray-600 dark:text-gray-300" x-text="filteredLeaveRequests.length"></span> of <span class="font-medium text-gray-600 dark:text-gray-300" x-text="allLeaveRequests.length"></span> results
-            </div>
-        </div>
-    </div>
-
 </div>
 
 <script>
 function leaveRequestsTable() {
     return {
-        allLeaveRequests: @json($mappedLeaveRequests),
+        allLeaveRequests: @json($leaveRequestsData),
         filteredLeaveRequests: [],
         searchQuery: '',
-        selected: [],
-        selectAll: false,
         columns: {
-            nama: true,
-            nip: true,
-            jenis_cuti: true,
-            tanggal: true,
-            total_hari: true,
+            jenisCuti: true,
+            tanggalMulai: true,
+            tanggalSelesai: true,
+            totalHari: true,
             status: true
         },
         
@@ -349,21 +230,13 @@ function leaveRequestsTable() {
             
             this.filteredLeaveRequests = this.allLeaveRequests.filter(leave => {
                 return (
-                    leave.employee_name.toLowerCase().includes(query) ||
-                    leave.employee_nip.toLowerCase().includes(query) ||
-                    leave.leave_type.toLowerCase().includes(query) ||
+                    leave.leave_type_name.toLowerCase().includes(query) ||
+                    leave.start_date_formatted.toLowerCase().includes(query) ||
+                    leave.end_date_formatted.toLowerCase().includes(query) ||
                     leave.status.toLowerCase().includes(query) ||
-                    leave.date_range.toLowerCase().includes(query)
+                    this.formatStatus(leave.status).toLowerCase().includes(query)
                 );
             });
-        },
-        
-        toggleSelectAll() {
-            if (this.selectAll) {
-                this.selected = this.filteredLeaveRequests.map(leave => leave.id);
-            } else {
-                this.selected = [];
-            }
         },
         
         formatStatus(status) {
@@ -379,11 +252,11 @@ function leaveRequestsTable() {
         },
         
         deleteLeaveRequest(leaveId) {
-            if (confirm('Apakah Anda yakin ingin menghapus data cuti ini?')) {
+            if (confirm('Apakah Anda yakin ingin menghapus pengajuan cuti ini?')) {
                 // Submit delete form
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '/kepegawaian/leave-requests/' + leaveId;
+                form.action = '/pegawai/leave-requests/' + leaveId;
                 
                 const csrfToken = document.createElement('input');
                 csrfToken.type = 'hidden';

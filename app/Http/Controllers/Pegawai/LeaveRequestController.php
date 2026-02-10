@@ -13,21 +13,41 @@ class LeaveRequestController extends Controller
 {
     public function index()
     {
-        $leaveRequests = LeaveRequest::whereHas('employee', function ($q) {
-            $q->where('user_id', auth()->id());
-        })->latest()->get();
+        $leaveRequests = LeaveRequest::with(['employee.user', 'leaveType', 'approvals.approver'])
+            ->whereHas('employee', function ($q) {
+                $q->where('user_id', auth()->id());
+            })
+            ->latest()
+            ->get();
 
-        return view('pages.pegawai.leave_requests.index', compact('leaveRequests'));
+        // Transform data for JavaScript
+        $leaveRequestsData = $leaveRequests->map(function($leave) {
+            return [
+                'id' => $leave->id,
+                'leave_type_name' => $leave->leaveType->name ?? '-',
+                'start_date' => $leave->start_date->format('Y-m-d'),
+                'start_date_formatted' => $leave->start_date->format('d M Y'),
+                'end_date' => $leave->end_date->format('Y-m-d'),
+                'end_date_formatted' => $leave->end_date->format('d M Y'),
+                'total_days' => $leave->total_days,
+                'status' => $leave->status,
+            ];
+        });
+
+        return view('pages.pegawai.leave_requests.index', compact('leaveRequests', 'leaveRequestsData'));
     }
 
     public function create()
     {
-        return view('pages.pegawai.leave_requests.create');
+        $employee = auth()->user()->employee;
+        $leaveTypes = LeaveType::all();
+        
+        return view('pages.pegawai.leave_requests.create', compact('employee', 'leaveTypes'));
     }
 
-    public function store(Request $request, LeaveRequestService $service)
+    public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
             'start_date'    => 'required|date',
             'end_date'      => 'required|date|after_or_equal:start_date',
@@ -35,16 +55,42 @@ class LeaveRequestController extends Controller
             'address_during_leave' => 'required|string',
         ]);
 
-        $service->create($request->all(), auth()->user());
+        // Get employee record for the authenticated user
+        $employee = auth()->user()->employee;
+        
+        if (!$employee) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Data pegawai tidak ditemukan. Silakan hubungi administrator.'])
+                ->withInput();
+        }
+
+        // Calculate total days
+        $startDate = new \DateTime($validated['start_date']);
+        $endDate = new \DateTime($validated['end_date']);
+        $totalDays = $startDate->diff($endDate)->days + 1;
+
+        // Create leave request with auto-set employee_id and status
+        LeaveRequest::create([
+            'employee_id' => $employee->id,
+            'leave_type_id' => $validated['leave_type_id'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'total_days' => $totalDays,
+            'reason' => $validated['reason'],
+            'address_during_leave' => $validated['address_during_leave'],
+            'status' => 'menunggu_atasan_langsung',
+        ]);
 
         return redirect()
-            ->route('pages.pegawai.leave-requests.index')
+            ->route('pegawai.leave-requests.index')
             ->with('success', 'Pengajuan cuti berhasil dibuat');
     }
 
     public function show(LeaveRequest $leaveRequest)
     {
         $this->authorize('view', $leaveRequest);
+
+        $leaveRequest->load(['employee.user', 'leaveType', 'approvals.approver']);
 
         return view('pages.pegawai.leave_requests.show', compact('leaveRequest'));
     }
@@ -56,10 +102,10 @@ class LeaveRequestController extends Controller
     {
         $this->authorize('view', $leaveRequest);
         
-        $employees = Employee::with('user')->get();
+        $employee = auth()->user()->employee;
         $leaveTypes = LeaveType::all();
         
-        return view('pages.pegawai.leave_requests.edit', compact('leaveRequest', 'employees', 'leaveTypes'));
+        return view('pages.pegawai.leave_requests.edit', compact('leaveRequest', 'employee', 'leaveTypes'));
     }
 
     /**
@@ -75,10 +121,17 @@ class LeaveRequestController extends Controller
             'address_during_leave' => 'required|string',
         ]);
 
+        // Calculate total days
+        $startDate = new \DateTime($validated['start_date']);
+        $endDate = new \DateTime($validated['end_date']);
+        $totalDays = $startDate->diff($endDate)->days + 1;
+
+        $validated['total_days'] = $totalDays;
+
         $leaveRequest->update($validated);
 
         return redirect()->route('pegawai.leave-requests.index')
-            ->with('success', 'Data cuti pegawai berhasil diupdate.');
+            ->with('success', 'Data cuti berhasil diupdate.');
     }
 
     /**
@@ -89,6 +142,6 @@ class LeaveRequestController extends Controller
         $leaveRequest->delete();
 
         return redirect()->route('pegawai.leave-requests.index')
-            ->with('success', 'Data cuti pegawai berhasil dihapus.');
+            ->with('success', 'Data cuti berhasil dihapus.');
     }
 }
