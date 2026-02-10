@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Pegawai\PengajuanCutiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -10,6 +11,40 @@ use App\Http\Controllers\AdminController;
 */
 Route::redirect('/', 'login');
 Route::middleware(['auth:sanctum'])->group(function () {
+
+/*
+|--------------------------------------------------------------------------
+| KEPEGAWAIAN (HR)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:kepegawaian'])
+    ->prefix('kepegawaian')
+    ->as('kepegawaian.')
+    ->group(function () {
+
+        Route::get('/dashboard', fn() => view('pages.kepegawaian.dashboard'))
+            ->name('dashboard');
+
+        // Export route must be before resource routes
+        Route::get('leave-requests/export', 
+            [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'export']
+        )->name('leave-requests.export');
+
+        // Leave Requests CRUD
+        Route::resource('leave-requests', 
+            \App\Http\Controllers\Kepegawaian\LeaveRequestController::class
+        );
+
+        // Master Leave Type
+        Route::resource('leave-types', 
+            \App\Http\Controllers\Kepegawaian\LeaveTypeController::class
+        );
+
+        // Leave Balance
+        Route::resource('leave-balances', 
+            \App\Http\Controllers\Kepegawaian\LeaveBalanceController::class
+        )->only(['index', 'store', 'update']);
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -86,40 +121,6 @@ Route::middleware(['auth', 'role:atasan_tidak_langsung'])
         Route::post('approvals/{leaveRequest}/reject', 
             [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'reject']
         )->name('approvals.reject');
-    });
-
-/*
-|--------------------------------------------------------------------------
-| KEPEGAWAIAN (HR)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'role:kepegawaian'])
-    ->prefix('kepegawaian')
-    ->as('kepegawaian.')
-    ->group(function () {
-
-        Route::get('/dashboard', fn() => view('pages.kepegawaian.dashboard'))
-            ->name('dashboard');
-
-        // Export route must be before resource routes
-        Route::get('leave-requests/export', 
-            [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'export']
-        )->name('leave-requests.export');
-
-        // Leave Requests CRUD
-        Route::resource('leave-requests', 
-            \App\Http\Controllers\Kepegawaian\LeaveRequestController::class
-        );
-
-        // Master Leave Type
-        Route::resource('leave-types', 
-            \App\Http\Controllers\Kepegawaian\LeaveTypeController::class
-        );
-
-        // Leave Balance
-        Route::resource('leave-balances', 
-            \App\Http\Controllers\Kepegawaian\LeaveBalanceController::class
-        )->only(['index', 'store', 'update']);
     });
 
 /*
