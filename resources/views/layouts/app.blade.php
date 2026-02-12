@@ -1,3 +1,5 @@
+{{-- resources/views/layouts/app.blade.php --}}
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -12,9 +14,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet" />
 
+    <!-- DataTables CSS (untuk approval page) -->
+    @stack('styles')
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- jQuery (untuk DataTables dan AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Styles -->
     @livewireStyles
@@ -33,7 +41,10 @@
         }
     </script>
 </head>
-<body class="font-inter antialiased bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400" :class="{ 'sidebar-expanded': sidebarExpanded }" x-data="{ sidebarOpen: false, sidebarExpanded: localStorage.getItem('sidebar-expanded') == 'true' }" x-init="$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))">
+<body class="font-inter antialiased bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400" 
+      :class="{ 'sidebar-expanded': sidebarExpanded }" 
+      x-data="{ sidebarOpen: false, sidebarExpanded: localStorage.getItem('sidebar-expanded') == 'true' }" 
+      x-init="$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))">
 
     <script>
         if (localStorage.getItem('sidebar-expanded') == 'true') {
@@ -46,14 +57,20 @@
     <!-- Page wrapper -->
     <div class="flex h-[100dvh] overflow-hidden">
 
-        <!-- Sidebar -->
-        <x-app.sidebar :variant="$attributes->get('sidebarVariant')" />
+        <!-- Sidebar - PERBAIKAN: Berikan default value -->
+        @php
+            $sidebarVariant = $sidebarVariant ?? 'default';
+            $headerVariant = $headerVariant ?? 'default';
+            $background = $background ?? '';
+        @endphp
+
+        <x-app.sidebar :variant="$sidebarVariant" />
 
         <!-- Content area -->
-        <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden {{ $attributes->get('background', '') }}" x-ref="contentarea">
+        <div class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden {{ $background }}" x-ref="contentarea">
 
             <!-- Header -->
-            <x-app.header :variant="$attributes->get('headerVariant')" />
+            <x-app.header :variant="$headerVariant" />
 
             <!-- Main content -->
             <main class="grow">
@@ -109,6 +126,7 @@
 
     </div>
 
+    @stack('scripts')
     @livewireScriptConfig
 </body>
 </html>

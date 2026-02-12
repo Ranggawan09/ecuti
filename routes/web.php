@@ -80,21 +80,31 @@ Route::middleware(['auth', 'role:atasan_langsung'])
     ->as('atasan-langsung.')
     ->group(function () {
 
-        Route::get('/dashboard', fn() => view('pages.atasan_langsung.dashboard'))
+        // Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\AtasanLangsung\DashboardController::class, 'index'])
             ->name('dashboard');
 
-        // Approval
-        Route::get('approvals', 
-            [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'index']
-        )->name('approvals.index');
+        // Approval Routes
+        Route::prefix('approvals')->name('approvals.')->group(function () {
+            
+            // List semua permohonan cuti
+            Route::get('/', [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'index'])
+                ->name('index');
+            
+            // Detail permohonan cuti (untuk modal AJAX)
+            Route::get('/{leaveRequest}', [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'show'])
+                ->name('show');
+            
+            // Approve permohonan cuti
+            Route::post('/{leaveRequest}/approve', [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'approve'])
+                ->name('approve');
+            
+            // Reject permohonan cuti
+            Route::post('/{leaveRequest}/reject', [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'reject'])
+                ->name('reject');
+            
+        });
 
-        Route::post('approvals/{leaveRequest}/approve', 
-            [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'approve']
-        )->name('approvals.approve');
-
-        Route::post('approvals/{leaveRequest}/reject', 
-            [\App\Http\Controllers\AtasanLangsung\ApprovalController::class, 'reject']
-        )->name('approvals.reject');
     });
 
 /*
