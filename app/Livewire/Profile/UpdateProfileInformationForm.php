@@ -12,6 +12,7 @@ class UpdateProfileInformationForm extends Component
 
     public $state = [];
     public $photo;
+    public $signature;
 
     protected $listeners = ['refresh' => '$refresh'];
 
@@ -25,6 +26,7 @@ class UpdateProfileInformationForm extends Component
         'state.unit_kerja' => 'nullable|string|max:255',
         'state.masa_kerja_tahun' => 'nullable|integer|min:0',
         'state.masa_kerja_bulan' => 'nullable|integer|min:0|max:11',
+        'signature' => 'nullable|image|mimes:png|max:1024',
     ];
 
     public function mount()
@@ -73,14 +75,22 @@ class UpdateProfileInformationForm extends Component
         try {
             $user = auth()->user();
 
+            $input = $this->state;
+            
+            if ($this->photo) {
+                $input['photo'] = $this->photo;
+            }
+            
+            if ($this->signature) {
+                $input['signature'] = $this->signature;
+            }
+
             app(\Laravel\Fortify\Contracts\UpdatesUserProfileInformation::class)->update(
                 $user,
-                $this->photo
-                    ? array_merge($this->state, ['photo' => $this->photo])
-                    : $this->state
+                $input
             );
 
-            if (isset($this->photo)) {
+            if (isset($this->photo) || isset($this->signature)) {
                 return redirect()->route('profile.show');
             }
 
@@ -104,6 +114,13 @@ class UpdateProfileInformationForm extends Component
     public function deleteProfilePhoto()
     {
         auth()->user()->deleteProfilePhoto();
+
+        $this->dispatch('refresh-navigation-menu');
+    }
+
+    public function deleteSignature()
+    {
+        auth()->user()->deleteSignature();
 
         $this->dispatch('refresh-navigation-menu');
     }

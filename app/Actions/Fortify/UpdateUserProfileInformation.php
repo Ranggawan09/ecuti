@@ -23,10 +23,15 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'masa_kerja_tahun' => ['nullable', 'integer', 'min:0'],
             'masa_kerja_bulan' => ['nullable', 'integer', 'min:0', 'max:11'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'signature' => ['nullable', 'image', 'mimes:png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
             $user->updateProfilePhoto($input['photo']);
+        }
+
+        if (isset($input['signature'])) {
+            $user->updateSignature($input['signature']);
         }
 
         if ($input['email'] !== $user->email &&

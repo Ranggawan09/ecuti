@@ -1,3 +1,5 @@
+{{-- resources/views/pages/atasan_tidak_langsung/approvals/index.blade.php --}}
+
 @php
     $mappedLeaveRequests = $leaveRequests->map(function($lr) {
         return [
@@ -22,7 +24,8 @@
 
         <!-- Left: Title -->
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Cuti Pegawai ✨</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Cuti Pegawai (Atasan Tidak Langsung) ✨</h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Menampilkan data cuti yang telah disetujui oleh atasan langsung</p>
         </div>
 
         <!-- Right: Actions -->
@@ -56,7 +59,7 @@
                 >
                     <ul>
                         <li>
-                            <a class="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex items-center py-1 px-3" href="{{ route('kepegawaian.leave-requests.export', ['format' => 'excel']) }}" @click="open = false">
+                            <a class="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex items-center py-1 px-3" href="#" @click.prevent="alert('Export Excel coming soon')">
                                 <svg class="w-4 h-4 fill-current text-green-500 shrink-0 mr-2" viewBox="0 0 16 16">
                                     <path d="M9 7h6v2H9V7Zm0 4h6v2H9v-2Zm-9 0h6v2H0v-2Zm0-4h6v2H0V7Zm0-4h6v2H0V3Zm9 0h6v2H9V3Z" />
                                 </svg>
@@ -64,7 +67,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex items-center py-1 px-3" href="{{ route('kepegawaian.leave-requests.export', ['format' => 'pdf']) }}" @click="open = false">
+                            <a class="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex items-center py-1 px-3" href="#" @click.prevent="alert('Export PDF coming soon')">
                                 <svg class="w-4 h-4 fill-current text-red-500 shrink-0 mr-2" viewBox="0 0 16 16">
                                     <path d="M9 7h6v2H9V7Zm0 4h6v2H9v-2Zm-9 0h6v2H0v-2Zm0-4h6v2H0V7Zm0-4h6v2H0V3Zm9 0h6v2H9V3Z" />
                                 </svg>
@@ -130,13 +133,6 @@
                 </div>
             </div>
 
-            <!-- Add button -->
-            <a href="{{ route('kepegawaian.leave-requests.create') }}" class="btn bg-violet-500 hover:bg-violet-600 text-white">
-                <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1Z" />
-                </svg>
-                <span class="ml-2">Tambah Cuti</span>
-            </a>
         </div>
 
     </div>
@@ -255,27 +251,28 @@
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
                                     <div class="flex items-center gap-2">
-                                        <a :href="'/kepegawaian/leave-requests/' + leave.id" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-blue-500" title="View">
+                                        <button @click="showDetail(leave.id)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-blue-500" title="View">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
                                                 <path d="M8 2c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6Zm0-2C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Z" />
                                                 <circle cx="8" cy="8" r="3" />
                                             </svg>
-                                        </a>
-                                        <!-- Print button for approved requests -->
-                                        <a x-show="leave.status === 'disetujui'" :href="'/kepegawaian/leave-requests/' + leave.id + '/print'" target="_blank" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-emerald-500" title="Cetak">
+                                        </button>
+                                        <button 
+                                            x-show="leave.status === 'menunggu_atasan_tidak_langsung'"
+                                            @click="showApprovalModal(leave.id, leave.employee_name)" 
+                                            class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" 
+                                            title="Proses">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                                                <path d="M14 0H2c-.6 0-1 .4-1 1v3c0 .6.4 1 1 1h1v2H2c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h1v1c0 .6.4 1 1 1h8c.6 0 1-.4 1-1v-1h1c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-1V5h1c.6 0 1-.4 1-1V1c0-.6-.4-1-1-1ZM4 14V9h8v5H4Zm8-9H4V2h8v3Z" />
+                                                <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm3.7 6.7L7.4 11c-.2.2-.4.3-.7.3-.3 0-.5-.1-.7-.3L3.3 8.3c-.4-.4-.4-1 0-1.4.4-.4 1-.4 1.4 0L6.7 9l3.6-3.6c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.3Z" />
                                             </svg>
-                                        </a>
-                                        <!-- Edit button for non-approved requests -->
-                                        <a x-show="leave.status !== 'disetujui'" :href="'/kepegawaian/leave-requests/' + leave.id + '/edit'" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" title="Edit">
+                                        </button>
+                                        <button 
+                                            x-show="leave.status !== 'menunggu_atasan_tidak_langsung'"
+                                            disabled
+                                            class="btn-sm bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-700/60 text-gray-400 dark:text-gray-500 cursor-not-allowed" 
+                                            title="Sudah Diproses">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                                                <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4ZM4.6 14H2v-2.6l6-6L10.6 8l-6 6ZM12 6.6 9.4 4 11 2.4 13.6 5 12 6.6Z" />
-                                            </svg>
-                                        </a>
-                                        <button @click="deleteLeaveRequest(leave.id)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-red-500" title="Delete">
-                                            <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                                                <path d="M5 7h2v6H5V7Zm4 0h2v6H9V7Zm3-6v2h4v2h-1v10c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V5H0V3h4V1c0-.6.4-1 1-1h6c.6 0 1 .4 1 1ZM6 2v1h4V2H6Zm7 3H3v9h10V5Z" />
+                                                <path d="M11 0c.6 0 1 .4 1 1v3c.6 0 1 .4 1 1v8c0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1V5c0-.6.4-1 1-1V1c0-.6.4-1 1-1h6ZM9 2H7v2h2V2ZM7 9.4 5.6 8c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l2 2c.2.2.4.3.7.3.3 0 .5-.1.7-.3l4-4c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0L7 9.4Z" />
                                             </svg>
                                         </button>
                                     </div>
@@ -319,6 +316,119 @@
             </nav>
             <div class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
                 Showing <span class="font-medium text-gray-600 dark:text-gray-300" x-text="filteredLeaveRequests.length"></span> of <span class="font-medium text-gray-600 dark:text-gray-300" x-text="allLeaveRequests.length"></span> results
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detail -->
+    <div id="detailModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="closeDetailModal()">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                        Detail Permohonan Cuti
+                    </h3>
+                    <button @click="closeDetailModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                            <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div id="detailContent" class="text-gray-700 dark:text-gray-300">
+                    <div class="text-center py-5">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                        <p class="mt-2 text-gray-500">Memuat data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Approval -->
+    <div id="approvalModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="closeApprovalModal()">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                        Proses Persetujuan Cuti
+                    </h3>
+                    <button @click="closeApprovalModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                            <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <input type="hidden" id="cuti_id">
+                
+                <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                        <strong>Pegawai:</strong> <span id="nama_pegawai"></span>
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pilih Keputusan</label>
+                    <div class="space-y-2">
+                        <button type="button" 
+                                class="w-full decision-btn px-4 py-3 bg-emerald-50 border-2 border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400 transition-all" 
+                                data-decision="approve">
+                            <svg class="inline-block w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Setujui Permohonan Cuti
+                        </button>
+                        <button type="button" 
+                                class="w-full decision-btn px-4 py-3 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 dark:bg-red-900/20 dark:border-red-700 dark:text-red-400 transition-all" 
+                                data-decision="reject">
+                            <svg class="inline-block w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                            Tolak Permohonan Cuti
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Form untuk Approval -->
+                <div id="approveForm" style="display: none;">
+                    <div class="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                        <p class="text-sm text-emerald-800 dark:text-emerald-200">Anda akan menyetujui permohonan cuti ini.</p>
+                    </div>
+                    <div class="mb-4">
+                        <label for="catatan_approve" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Catatan (Opsional)</label>
+                        <textarea id="catatan_approve" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Form untuk Rejection -->
+                <div id="rejectForm" style="display: none;">
+                    <div class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <p class="text-sm text-red-800 dark:text-red-200">Anda akan menolak permohonan cuti ini.</p>
+                    </div>
+                    <div class="mb-4">
+                        <label for="alasan_penolakan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Alasan Penolakan <span class="text-red-500">*</span>
+                        </label>
+                        <textarea id="alasan_penolakan" rows="4" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent" placeholder="Jelaskan alasan penolakan agar pegawai dapat melakukan revisi..."></textarea>
+                        <small class="text-gray-500 dark:text-gray-400 text-xs">Minimal 10 karakter. Alasan ini akan dikirim ke pegawai untuk revisi.</small>
+                        <div id="alasan_error" class="hidden text-red-500 text-sm mt-1">Alasan penolakan harus diisi minimal 10 karakter</div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-4">
+                    <button type="button" 
+                            @click="closeApprovalModal()" 
+                            class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 transition-colors">
+                        Batal
+                    </button>
+                    <button type="button" 
+                            id="submitApprovalBtn" 
+                            style="display: none;" 
+                            class="flex-1 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors">
+                        Kirim Keputusan
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -385,30 +495,128 @@ function leaveRequestsTable() {
             return statusMap[status] || status;
         },
         
-        deleteLeaveRequest(leaveId) {
-            if (confirm('Apakah Anda yakin ingin menghapus data cuti ini?')) {
-                // Submit delete form
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/kepegawaian/leave-requests/' + leaveId;
-                
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
-                
-                const methodField = document.createElement('input');
-                methodField.type = 'hidden';
-                methodField.name = '_method';
-                methodField.value = 'DELETE';
-                
-                form.appendChild(csrfToken);
-                form.appendChild(methodField);
-                document.body.appendChild(form);
-                form.submit();
-            }
+        showDetail(leaveId) {
+            document.getElementById('detailModal').classList.remove('hidden');
+            
+            fetch(`/atasan-tidak-langsung/approvals/${leaveId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('detailContent').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('detailContent').innerHTML = '<div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg"><p class="text-red-600 dark:text-red-400">Gagal memuat detail cuti</p></div>';
+                });
+        },
+        
+        closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        },
+        
+        showApprovalModal(leaveId, employeeName) {
+            document.getElementById('cuti_id').value = leaveId;
+            document.getElementById('nama_pegawai').textContent = employeeName;
+            document.getElementById('approvalModal').classList.remove('hidden');
+            
+            // Reset form
+            document.querySelectorAll('.decision-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('approveForm').style.display = 'none';
+            document.getElementById('rejectForm').style.display = 'none';
+            document.getElementById('submitApprovalBtn').style.display = 'none';
+            document.getElementById('catatan_approve').value = '';
+            document.getElementById('alasan_penolakan').value = '';
+            document.getElementById('alasan_error').classList.add('hidden');
+        },
+        
+        closeApprovalModal() {
+            document.getElementById('approvalModal').classList.add('hidden');
         }
     }
 }
+
+// Decision buttons
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.decision-btn')) {
+        const btn = e.target.closest('.decision-btn');
+        const decision = btn.dataset.decision;
+        
+        document.querySelectorAll('.decision-btn').forEach(b => b.classList.remove('active', 'ring-2', 'ring-offset-2'));
+        btn.classList.add('active', 'ring-2', 'ring-offset-2');
+        
+        if (decision === 'approve') {
+            btn.classList.add('ring-emerald-500');
+            document.getElementById('approveForm').style.display = 'block';
+            document.getElementById('rejectForm').style.display = 'none';
+        } else {
+            btn.classList.add('ring-red-500');
+            document.getElementById('rejectForm').style.display = 'block';
+            document.getElementById('approveForm').style.display = 'none';
+        }
+        
+        document.getElementById('submitApprovalBtn').style.display = 'block';
+        document.getElementById('submitApprovalBtn').dataset.decision = decision;
+    }
+});
+
+// Submit approval
+document.addEventListener('click', function(e) {
+    if (e.target.id === 'submitApprovalBtn') {
+        const cutiId = document.getElementById('cuti_id').value;
+        const decision = e.target.dataset.decision;
+        
+        if (decision === 'reject') {
+            const alasan = document.getElementById('alasan_penolakan').value.trim();
+            if (alasan.length < 10) {
+                document.getElementById('alasan_error').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('alasan_error').classList.add('hidden');
+        }
+        
+        const confirmMsg = decision === 'approve' 
+            ? 'Apakah Anda yakin ingin menyetujui permohonan cuti ini?' 
+            : 'Apakah Anda yakin ingin menolak permohonan cuti ini?';
+        
+        if (!confirm(confirmMsg)) return;
+        
+        const url = decision === 'approve'
+            ? `/atasan-tidak-langsung/approvals/${cutiId}/approve`
+            : `/atasan-tidak-langsung/approvals/${cutiId}/reject`;
+        
+        const data = {
+            _token: '{{ csrf_token() }}'
+        };
+        
+        if (decision === 'approve') {
+            data.catatan = document.getElementById('catatan_approve').value;
+        } else {
+            data.alasan_penolakan = document.getElementById('alasan_penolakan').value;
+        }
+        
+        e.target.disabled = true;
+        e.target.textContent = 'Memproses...';
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('approvalModal').classList.add('hidden');
+                alert(data.message);
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        })
+        .catch(error => {
+            alert('Terjadi kesalahan saat memproses');
+            e.target.disabled = false;
+            e.target.textContent = 'Kirim Keputusan';
+        });
+    }
+});
 </script>
 </x-layouts.app>

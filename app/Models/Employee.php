@@ -18,7 +18,8 @@ class Employee extends Model
         'atasan_langsung_id',
         'atasan_tidak_langsung_id',
         'masa_kerja_tahun',
-        'masa_kerja_bulan'
+        'masa_kerja_bulan',
+        'signature_path'
     ];
 
     // Relasi ke User
@@ -49,5 +50,44 @@ class Employee extends Model
     public function leaveBalances()
     {
         return $this->hasMany(LeaveBalance::class);
+    }
+
+    /**
+     * Get the URL to the employee's signature
+     */
+    public function getSignatureUrlAttribute(): ?string
+    {
+        if ($this->signature_path) {
+            return asset('storage/' . $this->signature_path);
+        }
+
+        return null;
+    }
+
+    /**
+     * Update the employee's signature
+     */
+    public function updateSignature($signature): void
+    {
+        $oldPath = $this->signature_path;
+        
+        $this->forceFill([
+            'signature_path' => $signature->storePublicly('signatures', ['disk' => 'public']),
+        ])->save();
+
+        if ($oldPath) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+        }
+    }
+
+    /**
+     * Delete the employee's signature
+     */
+    public function deleteSignature(): void
+    {
+        if ($this->signature_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($this->signature_path);
+            $this->forceFill(['signature_path' => null])->save();
+        }
     }
 }

@@ -30,6 +30,11 @@ Route::middleware(['auth', 'role:kepegawaian'])
             [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'export']
         )->name('leave-requests.export');
 
+        // Print route must be before resource routes
+        Route::get('leave-requests/{leaveRequest}/print', 
+            [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'print']
+        )->name('leave-requests.print');
+
         // Leave Requests CRUD
         Route::resource('leave-requests', 
             \App\Http\Controllers\Kepegawaian\LeaveRequestController::class
@@ -120,17 +125,27 @@ Route::middleware(['auth', 'role:atasan_tidak_langsung'])
         Route::get('/dashboard', fn() => view('pages.atasan_tidak_langsung.dashboard'))
             ->name('dashboard');
 
-        Route::get('approvals', 
-            [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'index']
-        )->name('approvals.index');
+        // Approval Routes
+        Route::prefix('approvals')->name('approvals.')->group(function () {
+            
+            // List semua permohonan cuti
+            Route::get('/', [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'index'])
+                ->name('index');
+            
+            // Detail permohonan cuti (untuk modal AJAX)
+            Route::get('/{leaveRequest}', [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'show'])
+                ->name('show');
+            
+            // Approve permohonan cuti
+            Route::post('/{leaveRequest}/approve', [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'approve'])
+                ->name('approve');
+            
+            // Reject permohonan cuti
+            Route::post('/{leaveRequest}/reject', [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'reject'])
+                ->name('reject');
+            
+        });
 
-        Route::post('approvals/{leaveRequest}/approve', 
-            [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'approve']
-        )->name('approvals.approve');
-
-        Route::post('approvals/{leaveRequest}/reject', 
-            [\App\Http\Controllers\AtasanTidakLangsung\ApprovalController::class, 'reject']
-        )->name('approvals.reject');
     });
 
 /*

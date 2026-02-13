@@ -128,6 +128,25 @@ class LeaveRequestController extends Controller
     }
 
     /**
+     * Print individual leave request form
+     */
+    public function print(LeaveRequest $leaveRequest)
+    {
+        // Load all necessary relationships
+        $leaveRequest->load([
+            'employee.user',
+            'employee.atasanLangsung',
+            'employee.atasanTidakLangsung',
+            'leaveType',
+            'approvals.approver',
+            'approvalAtasanLangsung.approver',
+            'approvalAtasanTidakLangsung.approver'
+        ]);
+
+        return view('pages.kepegawaian.leave_requests.print', compact('leaveRequest'));
+    }
+
+    /**
      * Export to Excel
      */
     private function exportExcel()

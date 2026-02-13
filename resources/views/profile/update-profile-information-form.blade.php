@@ -134,6 +134,50 @@
                 @endif
             @endif
         </div>
+
+        <!-- Row 5: Foto Tanda Tangan -->
+        <div x-data="{ signatureName: null, signaturePreview: null }" class="col-span-6 sm:col-span-4">
+            <!-- Signature File Input -->
+            <input type="file" class="hidden" wire:model="signature" x-ref="signature" accept=".png,image/png" x-on:change="
+                signatureName = $refs.signature.files[0].name;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    signaturePreview = e.target.result;
+                };
+                reader.readAsDataURL($refs.signature.files[0]);
+            " />
+
+            <x-label for="signature" value="{{ __('Foto Tanda Tangan') }}" />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Format PNG, maksimal 1MB</p>
+
+            <!-- Current Signature -->
+            <div class="mt-2" x-show="!signaturePreview">
+                @if ($this->user->signature_path)
+                    <img src="{{ $this->user->signature_url }}" alt="Tanda Tangan" class="h-24 object-contain bg-white border border-gray-200 dark:border-gray-700 rounded p-2">
+                @else
+                    <div class="h-24 w-48 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
+                        <span class="text-sm text-gray-400 dark:text-gray-500">Belum ada tanda tangan</span>
+                    </div>
+                @endif
+            </div>
+
+            <!-- New Signature Preview -->
+            <div class="mt-2" x-show="signaturePreview" style="display: none;">
+                <img :src="signaturePreview" alt="Preview Tanda Tangan" class="h-24 object-contain bg-white border border-gray-200 dark:border-gray-700 rounded p-2">
+            </div>
+
+            <x-secondary-button class="mt-2 me-2" type="button" x-on:click.prevent="$refs.signature.click()">
+                {{ __('Pilih Foto Tanda Tangan') }}
+            </x-secondary-button>
+
+            @if ($this->user->signature_path)
+                <x-secondary-button type="button" class="mt-2" wire:click="deleteSignature">
+                    {{ __('Hapus Tanda Tangan') }}
+                </x-secondary-button>
+            @endif
+
+            <x-input-error for="signature" class="mt-2" />
+        </div>
     </x-slot>
 
     <x-slot name="actions">
@@ -141,7 +185,7 @@
             {{ __('Saved.') }}
         </x-action-message>
 
-        <x-button wire:loading.attr="disabled" wire:target="photo">
+        <x-button wire:loading.attr="disabled" wire:target="photo,signature">
             {{ __('Save') }}
         </x-button>
     </x-slot>
