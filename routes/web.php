@@ -110,6 +110,10 @@ Route::middleware(['auth', 'role:atasan_langsung'])
             
         });
 
+        // Leave History Routes
+        Route::get('leave-history', [\App\Http\Controllers\AtasanLangsung\LeaveHistoryController::class, 'index'])
+            ->name('leave-history.index');
+
     });
 
 /*
@@ -145,6 +149,10 @@ Route::middleware(['auth', 'role:atasan_tidak_langsung'])
                 ->name('reject');
             
         });
+
+        // Leave History Routes
+        Route::get('leave-history', [\App\Http\Controllers\AtasanTidakLangsung\LeaveHistoryController::class, 'index'])
+            ->name('leave-history.index');
 
     });
 
