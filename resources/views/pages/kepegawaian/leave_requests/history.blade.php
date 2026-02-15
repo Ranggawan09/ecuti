@@ -22,7 +22,7 @@
 
         <!-- Left: Title -->
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Cuti Pegawai ✨</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Riwayat Pengajuan Cuti 📋</h1>
         </div>
 
         <!-- Right: Actions -->
@@ -159,7 +159,7 @@
     <!-- Table -->
     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl relative">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Semua Data Cuti <span class="text-gray-400 dark:text-gray-500 font-medium" x-text="'(' + filteredLeaveRequests.length + ')'"></span></h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Riwayat Cuti yang Telah Dicetak <span class="text-gray-400 dark:text-gray-500 font-medium" x-text="'(' + filteredLeaveRequests.length + ')'"></span></h2>
         </header>
         <div>
 

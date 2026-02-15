@@ -18,12 +18,14 @@ class LeaveRequest extends Model
         'total_days',
         'reason',
         'address_during_leave',
-        'status'
+        'status',
+        'printed_at'
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'printed_at' => 'datetime',
     ];
 
     // Relasi ke Employee
@@ -75,13 +77,13 @@ class LeaveRequest extends Model
     public function getStatusBadgeAttribute()
     {
         return match($this->status) {
-            'draft' => '<span class="badge bg-secondary">Draft</span>',
-            'menunggu_atasan_langsung' => '<span class="badge bg-warning">Menunggu Atasan Langsung</span>',
-            'menunggu_atasan_tidak_langsung' => '<span class="badge bg-info">Menunggu Atasan Tidak Langsung</span>',
-            'disetujui' => '<span class="badge bg-success">Disetujui</span>',
-            'ditolak' => '<span class="badge bg-danger">Ditolak</span>',
-            'ditangguhkan' => '<span class="badge bg-warning">Ditangguhkan</span>',
-            default => '<span class="badge bg-secondary">-</span>'
+            'draft' => '<span class=\"badge bg-secondary\">Draft</span>',
+            'menunggu_atasan_langsung' => '<span class=\"badge bg-warning\">Menunggu Atasan Langsung</span>',
+            'menunggu_atasan_tidak_langsung' => '<span class=\"badge bg-info\">Menunggu Atasan Tidak Langsung</span>',
+            'disetujui' => '<span class=\"badge bg-success\">Disetujui</span>',
+            'ditolak' => '<span class=\"badge bg-danger\">Ditolak</span>',
+            'ditangguhkan' => '<span class=\"badge bg-warning\">Ditangguhkan</span>',
+            default => '<span class=\"badge bg-secondary\">-</span>'
         };
     }
 }
