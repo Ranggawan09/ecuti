@@ -40,6 +40,20 @@ class LeaveRequestController extends Controller
     public function create()
     {
         $employee = auth()->user()->employee;
+        
+        // Check if employee exists
+        if (!$employee) {
+            return redirect()->route('profile.show')
+                ->with('error', 'Data pegawai tidak ditemukan. Silakan lengkapi profil Anda terlebih dahulu.');
+        }
+        
+        // Check if profile is complete
+        if (!$employee->hasCompleteProfile()) {
+            $missingFields = $employee->getMissingProfileFields();
+            return redirect()->route('profile.show')
+                ->with('warning', 'Profil Anda belum lengkap. Silakan lengkapi data berikut terlebih dahulu: ' . implode(', ', $missingFields));
+        }
+        
         $leaveTypes = LeaveType::all();
         
         return view('pages.pegawai.leave_requests.create', compact('employee', 'leaveTypes'));
@@ -47,6 +61,21 @@ class LeaveRequestController extends Controller
 
     public function store(Request $request)
     {
+        // Get employee record for the authenticated user
+        $employee = auth()->user()->employee;
+        
+        if (!$employee) {
+            return redirect()->route('profile.show')
+                ->withErrors(['error' => 'Data pegawai tidak ditemukan. Silakan hubungi administrator.']);
+        }
+        
+        // Check if profile is complete
+        if (!$employee->hasCompleteProfile()) {
+            $missingFields = $employee->getMissingProfileFields();
+            return redirect()->route('profile.show')
+                ->withErrors(['error' => 'Profil Anda belum lengkap. Silakan lengkapi data berikut terlebih dahulu: ' . implode(', ', $missingFields)]);
+        }
+        
         $validated = $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
             'start_date'    => 'required|date',
@@ -54,15 +83,6 @@ class LeaveRequestController extends Controller
             'reason'        => 'required|string',
             'address_during_leave' => 'required|string',
         ]);
-
-        // Get employee record for the authenticated user
-        $employee = auth()->user()->employee;
-        
-        if (!$employee) {
-            return redirect()->back()
-                ->withErrors(['error' => 'Data pegawai tidak ditemukan. Silakan hubungi administrator.'])
-                ->withInput();
-        }
 
         // Calculate total days
         $startDate = new \DateTime($validated['start_date']);

@@ -90,4 +90,38 @@ class Employee extends Model
             $this->forceFill(['signature_path' => null])->save();
         }
     }
+
+    /**
+     * Check if employee profile is complete for leave request
+     */
+    public function hasCompleteProfile(): bool
+    {
+        return !empty($this->jabatan) 
+            && !empty($this->unit_kerja) 
+            && !empty($this->golongan)
+            && ($this->masa_kerja_tahun !== null || $this->masa_kerja_bulan !== null);
+    }
+
+    /**
+     * Get missing profile fields
+     */
+    public function getMissingProfileFields(): array
+    {
+        $missing = [];
+        
+        if (empty($this->jabatan)) {
+            $missing[] = 'Jabatan';
+        }
+        if (empty($this->unit_kerja)) {
+            $missing[] = 'Unit Kerja';
+        }
+        if (empty($this->golongan)) {
+            $missing[] = 'Golongan Ruang';
+        }
+        if ($this->masa_kerja_tahun === null && $this->masa_kerja_bulan === null) {
+            $missing[] = 'Masa Kerja';
+        }
+        
+        return $missing;
+    }
 }
