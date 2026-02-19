@@ -44,8 +44,11 @@ class LeaveRequestController extends Controller
         // Check if employee exists
         if (!$employee) {
             return redirect()->route('profile.show')
-                ->with('error', 'Data pegawai tidak ditemukan. Silakan lengkapi profil Anda terlebih dahulu.');
+                ->with('warning', 'Data pegawai tidak ditemukan. Silakan lengkapi profil Anda terlebih dahulu.');
         }
+        
+        // Load user relationship for signature check
+        $employee->load('user');
         
         // Check if profile is complete
         if (!$employee->hasCompleteProfile()) {
@@ -66,14 +69,18 @@ class LeaveRequestController extends Controller
         
         if (!$employee) {
             return redirect()->route('profile.show')
-                ->withErrors(['error' => 'Data pegawai tidak ditemukan. Silakan hubungi administrator.']);
+                ->with('warning', 'Data pegawai tidak ditemukan. Silakan hubungi administrator.')
+                ->withErrors(['error' => 'Data pegawai tidak ditemukan.']);
         }
+        
+        // Load user relationship for signature check
+        $employee->load('user');
         
         // Check if profile is complete
         if (!$employee->hasCompleteProfile()) {
             $missingFields = $employee->getMissingProfileFields();
             return redirect()->route('profile.show')
-                ->withErrors(['error' => 'Profil Anda belum lengkap. Silakan lengkapi data berikut terlebih dahulu: ' . implode(', ', $missingFields)]);
+                ->with('warning', 'Profil Anda belum lengkap. Silakan lengkapi data berikut terlebih dahulu: ' . implode(', ', $missingFields));
         }
         
         $validated = $request->validate([

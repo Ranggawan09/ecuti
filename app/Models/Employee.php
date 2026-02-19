@@ -99,7 +99,8 @@ class Employee extends Model
         return !empty($this->jabatan) 
             && !empty($this->unit_kerja) 
             && !empty($this->golongan)
-            && ($this->masa_kerja_tahun !== null || $this->masa_kerja_bulan !== null);
+            && ($this->masa_kerja_tahun !== null || $this->masa_kerja_bulan !== null)
+            && !empty($this->user->signature_path);
     }
 
     /**
@@ -120,6 +121,9 @@ class Employee extends Model
         }
         if ($this->masa_kerja_tahun === null && $this->masa_kerja_bulan === null) {
             $missing[] = 'Masa Kerja';
+        }
+        if (empty($this->user->signature_path)) {
+            $missing[] = 'Foto Tanda Tangan';
         }
         
         return $missing;

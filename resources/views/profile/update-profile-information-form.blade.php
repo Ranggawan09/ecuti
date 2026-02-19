@@ -8,6 +8,31 @@
     </x-slot>
 
     <x-slot name="form">
+        {{-- Alert validasi kelengkapan profil --}}
+        @if (session('warning') && auth()->user()->employee && !auth()->user()->employee->hasCompleteProfile())
+            @php
+                $missingFields = auth()->user()->employee->getMissingProfileFields();
+            @endphp
+            <div class="col-span-6 mb-2">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 px-4 py-3 rounded-lg shadow-sm" role="alert">
+                    <div class="flex items-start gap-2">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="font-semibold text-sm">Profil belum lengkap!</p>
+                            <p class="text-sm mt-1">Harap lengkapi data berikut sebelum mengajukan cuti:</p>
+                            <ul class="list-disc list-inside text-sm mt-1 space-y-0.5">
+                                @foreach ($missingFields as $field)
+                                    <li>{{ $field }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- General Error Display -->
         @if ($errors->has('general'))
             <div class="col-span-6 sm:col-span-4">
@@ -73,22 +98,85 @@
         </div>
 
         <!-- Row 2: Jabatan dan Golongan Ruang -->
-        <div class="col-span-6 sm:col-span-3">
-            <x-label for="jabatan" value="{{ __('Jabatan') }}" />
-            <x-input id="jabatan" type="text" class="mt-1 block w-full" wire:model.defer="state.jabatan" />
+        <div class="col-span-6 sm:col-span-3"
+             x-data="{ val: @js(trim($this->state['jabatan'] ?? '')) }"
+             x-init="$watch('val', v => val = v)">
+            <x-label for="jabatan">
+                <span>Jabatan</span>
+                <span class="text-red-500 ml-1" title="Wajib diisi">*</span>
+            </x-label>
+            <input
+                id="jabatan"
+                type="text"
+                wire:model.defer="state.jabatan"
+                x-model="val"
+                autocomplete="off"
+                class="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 transition-colors duration-200"
+                :class="val && val.trim() !== ''
+                    ? 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-violet-500 focus:border-violet-500'
+                    : 'border-red-400 bg-red-50 dark:bg-red-900/20 text-gray-900 dark:text-gray-100 focus:ring-red-400 focus:border-red-400 ring-1 ring-red-300'"
+            />
+            @if(empty(trim($this->state['jabatan'] ?? '')))
+                <p class="text-red-500 text-xs mt-1 flex items-center gap-1" id="jabatan-error-msg">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    Jabatan wajib diisi
+                </p>
+            @endif
             <x-input-error for="jabatan" class="mt-2" />
         </div>
 
-        <div class="col-span-6 sm:col-span-3">
-            <x-label for="golongan" value="{{ __('Golongan Ruang') }}" />
-            <x-input id="golongan" type="text" class="mt-1 block w-full" wire:model.defer="state.golongan" />
+        <div class="col-span-6 sm:col-span-3"
+             x-data="{ val: @js(trim($this->state['golongan'] ?? '')) }"
+             x-init="$watch('val', v => val = v)">
+            <x-label for="golongan">
+                <span>Golongan Ruang</span>
+                <span class="text-red-500 ml-1" title="Wajib diisi">*</span>
+            </x-label>
+            <input
+                id="golongan"
+                type="text"
+                wire:model.defer="state.golongan"
+                x-model="val"
+                autocomplete="off"
+                class="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 transition-colors duration-200"
+                :class="val && val.trim() !== ''
+                    ? 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-violet-500 focus:border-violet-500'
+                    : 'border-red-400 bg-red-50 dark:bg-red-900/20 text-gray-900 dark:text-gray-100 focus:ring-red-400 focus:border-red-400 ring-1 ring-red-300'"
+            />
+            @if(empty(trim($this->state['golongan'] ?? '')))
+                <p class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    Golongan Ruang wajib diisi
+                </p>
+            @endif
             <x-input-error for="golongan" class="mt-2" />
         </div>
 
         <!-- Row 3: Unit Kerja dan Masa Kerja -->
-        <div class="col-span-6 sm:col-span-3">
-            <x-label for="unit_kerja" value="{{ __('Unit Kerja') }}" />
-            <x-input id="unit_kerja" type="text" class="mt-1 block w-full" wire:model.defer="state.unit_kerja" />
+        <div class="col-span-6 sm:col-span-3"
+             x-data="{ val: @js(trim($this->state['unit_kerja'] ?? '')) }"
+             x-init="$watch('val', v => val = v)">
+            <x-label for="unit_kerja">
+                <span>Unit Kerja</span>
+                <span class="text-red-500 ml-1" title="Wajib diisi">*</span>
+            </x-label>
+            <input
+                id="unit_kerja"
+                type="text"
+                wire:model.defer="state.unit_kerja"
+                x-model="val"
+                autocomplete="off"
+                class="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 transition-colors duration-200"
+                :class="val && val.trim() !== ''
+                    ? 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:ring-violet-500 focus:border-violet-500'
+                    : 'border-red-400 bg-red-50 dark:bg-red-900/20 text-gray-900 dark:text-gray-100 focus:ring-red-400 focus:border-red-400 ring-1 ring-red-300'"
+            />
+            @if(empty(trim($this->state['unit_kerja'] ?? '')))
+                <p class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    Unit Kerja wajib diisi
+                </p>
+            @endif
             <x-input-error for="unit_kerja" class="mt-2" />
         </div>
 
@@ -116,7 +204,6 @@
         <div class="col-span-6 sm:col-span-3">
             <x-label for="email" value="{{ __('Email') }}" />
             <x-input id="email" type="email" class="mt-1 block w-full" wire:model.defer="state.email" autocomplete="username" />
-            <x-input-error for="email" class="mt-2" />
 
             @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::emailVerification()) && ! $this->user->hasVerifiedEmail())
                 <p class="text-sm mt-2 dark:text-white">
@@ -136,10 +223,12 @@
         </div>
 
         <!-- Row 5: Foto Tanda Tangan -->
-        <div x-data="{ signatureName: null, signaturePreview: null }" class="col-span-6 sm:col-span-4">
+        @php $hasSignature = !empty($this->user->signature_path); @endphp
+        <div x-data="{ signatureName: null, signaturePreview: null, hasSignature: @js($hasSignature) }" class="col-span-6 sm:col-span-4">
             <!-- Signature File Input -->
             <input type="file" class="hidden" wire:model="signature" x-ref="signature" accept=".png,image/png" x-on:change="
                 signatureName = $refs.signature.files[0].name;
+                hasSignature = true;
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     signaturePreview = e.target.result;
@@ -147,16 +236,22 @@
                 reader.readAsDataURL($refs.signature.files[0]);
             " />
 
-            <x-label for="signature" value="{{ __('Foto Tanda Tangan') }}" />
+            <x-label for="signature">
+                <span>Foto Tanda Tangan</span>
+                <span class="text-red-500 ml-1" title="Wajib diisi">*</span>
+            </x-label>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Format PNG, maksimal 1MB</p>
 
-            <!-- Current Signature -->
+            <!-- Current Signature / Empty State -->
             <div class="mt-2" x-show="!signaturePreview">
                 @if ($this->user->signature_path)
                     <img src="{{ $this->user->signature_url }}" alt="Tanda Tangan" class="h-24 object-contain bg-white border border-gray-200 dark:border-gray-700 rounded p-2">
                 @else
-                    <div class="h-24 w-48 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
-                        <span class="text-sm text-gray-400 dark:text-gray-500">Belum ada tanda tangan</span>
+                    <div class="h-24 w-48 bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-400 rounded flex flex-col items-center justify-center gap-1">
+                        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                        </svg>
+                        <span class="text-xs text-red-500 font-medium">Belum ada tanda tangan</span>
                     </div>
                 @endif
             </div>
@@ -176,6 +271,13 @@
                 </x-secondary-button>
             @endif
 
+            @if (!$this->user->signature_path)
+                <p class="text-red-500 text-xs mt-2 flex items-center gap-1" x-show="!hasSignature">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    Foto Tanda Tangan wajib diunggah
+                </p>
+            @endif
+
             <x-input-error for="signature" class="mt-2" />
         </div>
     </x-slot>
@@ -189,4 +291,5 @@
             {{ __('Save') }}
         </x-button>
     </x-slot>
+
 </x-form-section>
