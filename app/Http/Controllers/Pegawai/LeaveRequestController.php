@@ -15,22 +15,22 @@ class LeaveRequestController extends Controller
     {
         $leaveRequests = LeaveRequest::with(['employee.user', 'leaveType', 'approvals.approver'])
             ->whereHas('employee', function ($q) {
-                $q->where('user_id', auth()->id());
-            })
+            $q->where('user_id', auth()->id());
+        })
             ->latest()
             ->get();
 
         // Transform data for JavaScript
-        $leaveRequestsData = $leaveRequests->map(function($leave) {
+        $leaveRequestsData = $leaveRequests->map(function ($leave) {
             return [
-                'id' => $leave->id,
-                'leave_type_name' => $leave->leaveType->name ?? '-',
-                'start_date' => $leave->start_date->format('Y-m-d'),
-                'start_date_formatted' => $leave->start_date->format('d M Y'),
-                'end_date' => $leave->end_date->format('Y-m-d'),
-                'end_date_formatted' => $leave->end_date->format('d M Y'),
-                'total_days' => $leave->total_days,
-                'status' => $leave->status,
+            'id' => $leave->id,
+            'leave_type_name' => $leave->leaveType->name ?? '-',
+            'start_date' => $leave->start_date->format('Y-m-d'),
+            'start_date_formatted' => $leave->start_date->format('d M Y'),
+            'end_date' => $leave->end_date->format('Y-m-d'),
+            'end_date_formatted' => $leave->end_date->format('d M Y'),
+            'total_days' => $leave->total_days,
+            'status' => $leave->status,
             ];
         });
 
@@ -40,25 +40,25 @@ class LeaveRequestController extends Controller
     public function create()
     {
         $employee = auth()->user()->employee;
-        
+
         // Check if employee exists
         if (!$employee) {
             return redirect()->route('profile.show')
                 ->with('warning', 'Data pegawai tidak ditemukan. Silakan lengkapi profil Anda terlebih dahulu.');
         }
-        
+
         // Load user relationship for signature check
         $employee->load('user');
-        
+
         // Check if profile is complete
         if (!$employee->hasCompleteProfile()) {
             $missingFields = $employee->getMissingProfileFields();
             return redirect()->route('profile.show')
                 ->with('warning', 'Profil Anda belum lengkap. Silakan lengkapi data berikut terlebih dahulu: ' . implode(', ', $missingFields));
         }
-        
+
         $leaveTypes = LeaveType::all();
-        
+
         return view('pages.pegawai.leave_requests.create', compact('employee', 'leaveTypes'));
     }
 
@@ -66,28 +66,28 @@ class LeaveRequestController extends Controller
     {
         // Get employee record for the authenticated user
         $employee = auth()->user()->employee;
-        
+
         if (!$employee) {
             return redirect()->route('profile.show')
                 ->with('warning', 'Data pegawai tidak ditemukan. Silakan hubungi administrator.')
                 ->withErrors(['error' => 'Data pegawai tidak ditemukan.']);
         }
-        
+
         // Load user relationship for signature check
         $employee->load('user');
-        
+
         // Check if profile is complete
         if (!$employee->hasCompleteProfile()) {
             $missingFields = $employee->getMissingProfileFields();
             return redirect()->route('profile.show')
                 ->with('warning', 'Profil Anda belum lengkap. Silakan lengkapi data berikut terlebih dahulu: ' . implode(', ', $missingFields));
         }
-        
+
         $validated = $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
-            'start_date'    => 'required|date',
-            'end_date'      => 'required|date|after_or_equal:start_date',
-            'reason'        => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'required|string',
             'address_during_leave' => 'required|string',
         ]);
 
@@ -113,11 +113,15 @@ class LeaveRequestController extends Controller
             ->with('success', 'Pengajuan cuti berhasil dibuat');
     }
 
-    public function show(LeaveRequest $leaveRequest)
+    public function show(Request $request, LeaveRequest $leaveRequest)
     {
         $this->authorize('view', $leaveRequest);
 
         $leaveRequest->load(['employee.user', 'leaveType', 'approvals.approver']);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return view('pages.pegawai.leave_requests._show_partial', compact('leaveRequest'));
+        }
 
         return view('pages.pegawai.leave_requests.show', compact('leaveRequest'));
     }
@@ -125,13 +129,17 @@ class LeaveRequestController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(LeaveRequest $leaveRequest)
+    public function edit(Request $request, LeaveRequest $leaveRequest)
     {
         $this->authorize('view', $leaveRequest);
-        
+
         $employee = auth()->user()->employee;
         $leaveTypes = LeaveType::all();
-        
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return view('pages.pegawai.leave_requests._edit_partial', compact('leaveRequest', 'employee', 'leaveTypes'));
+        }
+
         return view('pages.pegawai.leave_requests.edit', compact('leaveRequest', 'employee', 'leaveTypes'));
     }
 
@@ -140,25 +148,68 @@ class LeaveRequestController extends Controller
      */
     public function update(Request $request, LeaveRequest $leaveRequest)
     {
-        $validated = $request->validate([
-            'leave_type_id' => 'required|exists:leave_types,id',
-            'start_date'    => 'required|date',
-            'end_date'      => 'required|date|after_or_equal:start_date',
-            'reason'        => 'required|string',
-            'address_during_leave' => 'required|string',
-        ]);
+        $isAjax = $request->ajax() || $request->wantsJson();
 
-        // Calculate total days
+        try {
+            $validated = $request->validate([
+                'leave_type_id' => 'required|exists:leave_types,id',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'reason' => 'required|string',
+                'address_during_leave' => 'required|string',
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal: ' . implode(' ', array_merge(...array_values($e->errors()))),
+                ], 422);
+            }
+            throw $e;
+        }
+
+        // Hitung total hari
         $startDate = new \DateTime($validated['start_date']);
         $endDate = new \DateTime($validated['end_date']);
         $totalDays = $startDate->diff($endDate)->days + 1;
-
         $validated['total_days'] = $totalDays;
+
+        // Tentukan status reset berdasarkan level approver terakhir yang memproses
+        // (approval dengan status selain "menunggu_*", paling baru)
+        $leaveRequest->load('approvals');
+        $lastApproval = $leaveRequest->approvals
+            ->filter(fn($a) => !in_array($a->status, [
+        'menunggu_atasan_langsung',
+        'menunggu_atasan_tidak_langsung',
+        ]))
+            ->sortByDesc('created_at')
+            ->first();
+
+        if ($lastApproval && $lastApproval->level === 'atasan_tidak_langsung') {
+            // Terakhir diproses atasan tidak langsung → balik ke menunggu ATL
+            $validated['status'] = 'menunggu_atasan_tidak_langsung';
+        }
+        else {
+            // Terakhir diproses atasan langsung, atau belum pernah diproses → balik ke menunggu AL
+            $validated['status'] = 'menunggu_atasan_langsung';
+        }
 
         $leaveRequest->update($validated);
 
+        if ($isAjax) {
+            $statusLabel = $validated['status'] === 'menunggu_atasan_tidak_langsung'
+                ? 'Menunggu Atasan Tidak Langsung'
+                : 'Menunggu Atasan Langsung';
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data cuti berhasil diperbarui. Status dikembalikan ke: ' . $statusLabel,
+            ]);
+        }
+
         return redirect()->route('pegawai.leave-requests.index')
-            ->with('success', 'Data cuti berhasil diupdate.');
+            ->with('success', 'Data cuti berhasil diperbarui.');
     }
 
     /**

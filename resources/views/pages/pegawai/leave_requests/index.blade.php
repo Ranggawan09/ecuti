@@ -59,6 +59,10 @@
                             <input type="checkbox" class="form-checkbox" x-model="columns.status" checked>
                             <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">Status</span>
                         </label>
+                        <label class="flex items-center py-1">
+                            <input type="checkbox" class="form-checkbox" x-model="columns.catatan" checked>
+                            <span class="text-sm text-gray-600 dark:text-gray-300 font-medium ml-2">Catatan Atasan</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -123,6 +127,9 @@
                             <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.status">
                                 <div class="font-semibold text-left">Status</div>
                             </th>
+                            <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.catatan">
+                                <div class="font-semibold text-left">Catatan Atasan</div>
+                            </th>
                             <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
                                 <div class="font-semibold text-left">Aksi</div>
                             </th>
@@ -157,18 +164,32 @@
                                          x-text="formatStatus(leave.status)">
                                     </div>
                                 </td>
+                                <td class="px-2 first:pl-5 last:pr-5 py-3" x-show="columns.catatan">
+                                    <template x-if="leave.catatan_atasan">
+                                        <div class="max-w-xs">
+                                            <p class="text-sm text-gray-700 dark:text-gray-200 line-clamp-2" x-text="leave.catatan_atasan"></p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5" x-text="'— ' + (leave.catatan_dari ?? 'Atasan')"></p>
+                                        </div>
+                                    </template>
+                                    <template x-if="!leave.catatan_atasan">
+                                        <span class="text-gray-400 dark:text-gray-600 text-sm">—</span>
+                                    </template>
+                                </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
                                     <div class="flex items-center gap-2">
-                                        <a :href="'/pegawai/leave-requests/' + leave.id" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-blue-500" title="Lihat Detail">
+                                        <!-- Show Modal -->
+                                        <button @click="openShowModal(leave.id)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-blue-500" title="Lihat Detail">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
                                                 <path d="M8 3.5c-3.5 0-6.3 2.3-7.5 5.5 1.2 3.2 4 5.5 7.5 5.5s6.3-2.3 7.5-5.5C14.3 5.8 11.5 3.5 8 3.5ZM8 12c-2 0-3.7-1.2-4.5-3 .8-1.8 2.5-3 4.5-3s3.7 1.2 4.5 3c-.8 1.8-2.5 3-4.5 3Zm0-5c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2Z"/>
                                             </svg>
-                                        </a>
-                                        <a :href="'/pegawai/leave-requests/' + leave.id + '/edit'" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" title="Edit">
+                                        </button>
+                                        <!-- Edit Modal -->
+                                        <button @click="openEditModal(leave.id)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" title="Edit">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
                                                 <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4ZM4.6 14H2v-2.6l6-6L10.6 8l-6 6ZM12 6.6 9.4 4 11 2.4 13.6 5 12 6.6Z" />
                                             </svg>
-                                        </a>
+                                        </button>
+                                        <!-- Delete -->
                                         <button @click="deleteLeaveRequest(leave.id)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-red-500" title="Hapus">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
                                                 <path d="M5 7h2v6H5V7Zm4 0h2v6H9V7Zm3-6v2h4v2h-1v10c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V5H0V3h4V1c0-.6.4-1 1-1h6c.6 0 1 .4 1 1ZM6 2v1h4V2H6Zm7 3H3v9h10V5Z" />
@@ -200,6 +221,54 @@
         </div>
     </div>
 
+    <!-- ==================== MODAL SHOW ==================== -->
+    <div id="showModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="closeShowModal()">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2 shadow-lg rounded-xl bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-5 pb-4 border-b border-gray-100 dark:border-gray-700/60">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Detail Pengajuan Cuti</h3>
+                    <button @click="closeShowModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                        <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                            <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Content -->
+                <div id="showContent">
+                    <div class="text-center py-8">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                        <p class="mt-2 text-gray-500 dark:text-gray-400">Memuat data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL EDIT ==================== -->
+    <div id="editModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click.self="closeEditModal()">
+        <div class="relative top-10 mx-auto mb-10 p-5 border w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2 shadow-lg rounded-xl bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-5 pb-4 border-b border-gray-100 dark:border-gray-700/60">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Pengajuan Cuti</h3>
+                    <button @click="closeEditModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                        <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                            <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Content -->
+                <div id="editContent">
+                    <div class="text-center py-8">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                        <p class="mt-2 text-gray-500 dark:text-gray-400">Memuat form...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -213,7 +282,8 @@ function leaveRequestsTable() {
             tanggalMulai: true,
             tanggalSelesai: true,
             totalHari: true,
-            status: true
+            status: true,
+            catatan: true
         },
         
         init() {
@@ -250,10 +320,56 @@ function leaveRequestsTable() {
             };
             return statusMap[status] || status;
         },
+
+        // ===== MODAL SHOW =====
+        openShowModal(leaveId) {
+            document.getElementById('showModal').classList.remove('hidden');
+            document.getElementById('showContent').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                    <p class="mt-2 text-gray-500 dark:text-gray-400">Memuat data...</p>
+                </div>`;
+            fetch(`/pegawai/leave-requests/${leaveId}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('showContent').innerHTML = html;
+            })
+            .catch(() => {
+                document.getElementById('showContent').innerHTML = '<p class="text-red-500 text-center py-4">Gagal memuat data.</p>';
+            });
+        },
+        closeShowModal() {
+            document.getElementById('showModal').classList.add('hidden');
+        },
+
+        // ===== MODAL EDIT =====
+        openEditModal(leaveId) {
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editContent').innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                    <p class="mt-2 text-gray-500 dark:text-gray-400">Memuat form...</p>
+                </div>`;
+            fetch(`/pegawai/leave-requests/${leaveId}/edit`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('editContent').innerHTML = html;
+                initEditForm(leaveId);
+            })
+            .catch(() => {
+                document.getElementById('editContent').innerHTML = '<p class="text-red-500 text-center py-4">Gagal memuat form.</p>';
+            });
+        },
+        closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        },
         
         deleteLeaveRequest(leaveId) {
             if (confirm('Apakah Anda yakin ingin menghapus pengajuan cuti ini?')) {
-                // Submit delete form
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/pegawai/leave-requests/' + leaveId;
@@ -275,6 +391,58 @@ function leaveRequestsTable() {
             }
         }
     }
+}
+
+// Submit edit form via fetch (dipanggil setelah form dimuat)
+function initEditForm(leaveId) {
+    const form = document.getElementById('editLeaveForm');
+    if (!form) return;
+
+    // Hitung hari otomatis
+    function calcDays() {
+        const s = form.querySelector('#edit_start_date').value;
+        const e = form.querySelector('#edit_end_date').value;
+        if (s && e) {
+            const diff = Math.ceil((new Date(e) - new Date(s)) / 86400000) + 1;
+            const el = form.querySelector('#edit_total_days_display');
+            if (el) el.textContent = diff > 0 ? diff + ' hari' : '-';
+        }
+    }
+    form.querySelector('#edit_start_date')?.addEventListener('change', calcDays);
+    form.querySelector('#edit_end_date')?.addEventListener('change', calcDays);
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = form.querySelector('[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+
+        const data = new FormData(form);
+        data.append('_method', 'PUT');
+
+        fetch(`/pegawai/leave-requests/${leaveId}`, {
+            method: 'POST',
+            body: data,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                alert(res.message || 'Pengajuan cuti berhasil diperbarui.');
+                document.getElementById('editModal').classList.add('hidden');
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                alert(res.message || 'Terjadi kesalahan validasi.');
+                btn.disabled = false;
+                btn.textContent = 'Update';
+            }
+        })
+        .catch(() => {
+            alert('Terjadi kesalahan. Silakan coba lagi.');
+            btn.disabled = false;
+            btn.textContent = 'Update';
+        });
+    });
 }
 </script>
 </x-layouts.app>

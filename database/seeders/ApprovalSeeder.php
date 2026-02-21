@@ -20,13 +20,13 @@ class ApprovalSeeder extends Seeder
                 'leave_request_id' => $leave->id,
                 'approver_id' => $atasanLangsung->id,
                 'level' => 'atasan_langsung',
-                'status' => 'menunggu',
+                'status' => 'menunggu_atasan_langsung',
             ],
             [
                 'leave_request_id' => $leave->id,
                 'approver_id' => $atasanTidakLangsung->id,
                 'level' => 'atasan_tidak_langsung',
-                'status' => 'menunggu',
+                'status' => 'menunggu_atasan_tidak_langsung',
             ],
         ]);
     }
