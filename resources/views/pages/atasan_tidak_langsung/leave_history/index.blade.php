@@ -173,9 +173,12 @@
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.status">
                                     <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5" 
                                          :class="{
+                                             'bg-amber-100 dark:bg-amber-500/30 text-amber-600 dark:text-amber-400': leave.status === 'menunggu_atasan_langsung',
+                                             'bg-blue-100 dark:bg-blue-500/30 text-blue-600 dark:text-blue-400': leave.status === 'menunggu_atasan_tidak_langsung',
                                              'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400': leave.status === 'disetujui',
-                                             'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400': leave.status === 'ditolak',
-                                             'bg-orange-100 dark:bg-orange-500/30 text-orange-600 dark:text-orange-400': leave.status === 'ditangguhkan'
+                                             'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400': leave.status === 'tidak_disetujui',
+                                             'bg-orange-100 dark:bg-orange-500/30 text-orange-600 dark:text-orange-400': leave.status === 'ditangguhkan',
+                                             'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300': leave.status === 'perubahan'
                                          }"
                                          x-text="formatStatus(leave.status)">
                                     </div>
@@ -246,9 +249,12 @@ function leaveHistoryTable() {
         
         formatStatus(status) {
             const statusMap = {
+                'menunggu_atasan_langsung': 'Menunggu Atasan Langsung',
+                'menunggu_atasan_tidak_langsung': 'Menunggu Atasan Tidak Langsung',
                 'disetujui': 'Disetujui',
-                'ditolak': 'Ditolak',
-                'ditangguhkan': 'Ditangguhkan'
+                'perubahan': 'Perubahan',
+                'ditangguhkan': 'Ditangguhkan',
+                'tidak_disetujui': 'Tidak Disetujui'
             };
             return statusMap[status] || status;
         }

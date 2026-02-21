@@ -65,23 +65,23 @@ class ApprovalController extends Controller
 
             // Update atau create approval record
             Approval::updateOrCreate(
-                [
-                    'leave_request_id' => $leaveRequest->id,
-                    'level' => 'atasan_langsung'
-                ],
-                [
-                    'approver_id' => Auth::id(),
-                    'status' => 'disetujui',
-                    'note' => $request->catatan ?? 'Disetujui oleh atasan langsung',
-                    'approved_at' => now()
-                ]
+            [
+                'leave_request_id' => $leaveRequest->id,
+                'level' => 'atasan_langsung'
+            ],
+            [
+                'approver_id' => Auth::id(),
+                'status' => 'disetujui',
+                'note' => $request->catatan ?? 'Disetujui oleh atasan langsung',
+                'approved_at' => now()
+            ]
             );
 
             // Update status leave request
             // Jika ada atasan tidak langsung, status jadi menunggu atasan tidak langsung
             // Jika tidak ada, langsung disetujui
             $hasAtasanTidakLangsung = $leaveRequest->employee->atasan_tidak_langsung_id != null;
-            
+
             $leaveRequest->update([
                 'status' => $hasAtasanTidakLangsung ? 'menunggu_atasan_tidak_langsung' : 'disetujui'
             ]);
@@ -96,7 +96,8 @@ class ApprovalController extends Controller
                 ]
             ]);
 
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
@@ -107,12 +108,19 @@ class ApprovalController extends Controller
 
     public function reject(Request $request, LeaveRequest $leaveRequest)
     {
+        $newStatus = $request->input('status', 'tidak_disetujui');
+
+        // Validasi: hanya status yang diizinkan
+        if (!in_array($newStatus, ['tidak_disetujui', 'perubahan', 'ditangguhkan'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Status tidak valid.'
+            ], 422);
+        }
+
+        // Alasan opsional
         $request->validate([
-            'alasan_penolakan' => 'required|string|min:10|max:500'
-        ], [
-            'alasan_penolakan.required' => 'Alasan penolakan harus diisi',
-            'alasan_penolakan.min' => 'Alasan penolakan minimal 10 karakter',
-            'alasan_penolakan.max' => 'Alasan penolakan maksimal 500 karakter'
+            'alasan_penolakan' => 'nullable|string|max:500'
         ]);
 
         try {
@@ -136,21 +144,21 @@ class ApprovalController extends Controller
 
             // Update atau create approval record
             Approval::updateOrCreate(
-                [
-                    'leave_request_id' => $leaveRequest->id,
-                    'level' => 'atasan_langsung'
-                ],
-                [
-                    'approver_id' => Auth::id(),
-                    'status' => 'ditolak',
-                    'note' => $request->alasan_penolakan,
-                    'approved_at' => now()
-                ]
+            [
+                'leave_request_id' => $leaveRequest->id,
+                'level' => 'atasan_langsung'
+            ],
+            [
+                'approver_id' => Auth::id(),
+                'status' => $newStatus,
+                'note' => $request->alasan_penolakan ?? $request->catatan,
+                'approved_at' => now()
+            ]
             );
 
             // Update status leave request
             $leaveRequest->update([
-                'status' => 'ditolak'
+                'status' => $newStatus
             ]);
 
             DB::commit();
@@ -158,15 +166,22 @@ class ApprovalController extends Controller
             // TODO: Kirim notifikasi ke pegawai
             // $this->sendNotificationToEmployee($leaveRequest);
 
+            $messageMap = [
+                'tidak_disetujui' => 'Permohonan cuti berhasil ditolak.',
+                'perubahan' => 'Permohonan cuti ditandai perlu perubahan.',
+                'ditangguhkan' => 'Permohonan cuti berhasil ditangguhkan.',
+            ];
+
             return response()->json([
                 'success' => true,
-                'message' => 'Permohonan cuti berhasil ditolak. Pegawai akan menerima notifikasi untuk revisi.',
+                'message' => $messageMap[$newStatus] ?? 'Keputusan berhasil disimpan.',
                 'data' => [
                     'status' => $leaveRequest->status
                 ]
             ]);
 
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,

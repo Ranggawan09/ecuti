@@ -291,7 +291,7 @@
                     <span class="checkbox"></span> Ditangguhkan
                 </td>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $leaveRequest->approvalAtasanLangsung && $leaveRequest->approvalAtasanLangsung->status == 'ditolak' ? 'checked' : '' }}"></span> Tidak disetujui
+                    <span class="checkbox {{ $leaveRequest->approvalAtasanLangsung && $leaveRequest->approvalAtasanLangsung->status == 'tidak_disetujui' ? 'checked' : '' }}"></span> Tidak disetujui
                 </td>
             </tr>
             <tr>
@@ -326,7 +326,7 @@
                     <span class="checkbox {{ $leaveRequest->status == 'ditangguhkan' ? 'checked' : '' }}"></span> Ditangguhkan
                 </td>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $leaveRequest->status == 'ditolak' ? 'checked' : '' }}"></span> Tidak Disetujui
+                    <span class="checkbox {{ $leaveRequest->status == 'tidak_disetujui' ? 'checked' : '' }}"></span> Tidak Disetujui
                 </td>
             </tr>
             <tr>

@@ -64,7 +64,7 @@ class LeaveRequestSeeder extends Seeder
                 'total_days' => 3,
                 'reason' => 'Perayaan hari kemerdekaan',
                 'address' => 'Jakarta',
-                'status' => 'ditolak',
+                'status' => 'tidak_disetujui',
             ],
             [
                 'employee_index' => 5,
@@ -74,7 +74,7 @@ class LeaveRequestSeeder extends Seeder
                 'total_days' => 11,
                 'reason' => 'Umroh bersama keluarga',
                 'address' => 'Makkah, Arab Saudi',
-                'status' => 'draft',
+                'status' => 'menunggu_atasan_langsung',
             ],
             [
                 'employee_index' => 0,
@@ -101,10 +101,10 @@ class LeaveRequestSeeder extends Seeder
         foreach ($sampleRequests as $request) {
             // Get employee by index (cycle through if not enough employees)
             $employee = $employees[$request['employee_index'] % $employees->count()];
-            
+
             // Find leave type
             $leaveType = $leaveTypes->firstWhere('name', $request['leave_type']);
-            
+
             if ($employee && $leaveType) {
                 LeaveRequest::create([
                     'employee_id' => $employee->id,

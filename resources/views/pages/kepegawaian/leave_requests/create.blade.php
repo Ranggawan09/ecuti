@@ -165,12 +165,12 @@
                         Status <span class="text-red-500">*</span>
                     </label>
                     <select id="status" name="status" class="form-select w-full @error('status') border-red-300 @enderror" required>
-                        <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Draft</option>
                         <option value="menunggu_atasan_langsung" {{ old('status') == 'menunggu_atasan_langsung' ? 'selected' : '' }}>Menunggu Atasan Langsung</option>
                         <option value="menunggu_atasan_tidak_langsung" {{ old('status') == 'menunggu_atasan_tidak_langsung' ? 'selected' : '' }}>Menunggu Atasan Tidak Langsung</option>
                         <option value="disetujui" {{ old('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                        <option value="ditolak" {{ old('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                        <option value="perubahan" {{ old('status') == 'perubahan' ? 'selected' : '' }}>Perubahan</option>
                         <option value="ditangguhkan" {{ old('status') == 'ditangguhkan' ? 'selected' : '' }}>Ditangguhkan</option>
+                        <option value="tidak_disetujui" {{ old('status') == 'tidak_disetujui' ? 'selected' : '' }}>Tidak Disetujui</option>
                     </select>
                     @error('status')
                         <p class="text-sm text-red-500 mt-1">{{ $message }}</p>

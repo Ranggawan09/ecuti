@@ -18,14 +18,14 @@ class DashboardController extends Controller
 
         $stats = [
             'menunggu' => LeaveRequest::whereIn('employee_id', $employeeIds)
-                ->where('status', 'menunggu_atasan_langsung')
-                ->count(),
+            ->where('status', 'menunggu_atasan_langsung')
+            ->count(),
             'disetujui' => LeaveRequest::whereIn('employee_id', $employeeIds)
-                ->where('status', 'disetujui')
-                ->count(),
-            'ditolak' => LeaveRequest::whereIn('employee_id', $employeeIds)
-                ->where('status', 'ditolak')
-                ->count(),
+            ->where('status', 'disetujui')
+            ->count(),
+            'tidak_disetujui' => LeaveRequest::whereIn('employee_id', $employeeIds)
+            ->where('status', 'tidak_disetujui')
+            ->count(),
         ];
 
         return view('pages.atasan_langsung.dashboard', compact('stats'));

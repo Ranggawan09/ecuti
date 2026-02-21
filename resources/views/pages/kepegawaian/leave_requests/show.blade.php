@@ -84,24 +84,23 @@
                         <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Status</label>
                         <div>
                             @php
-                                $statusClasses = match($leaveRequest->status) {
-                                    'draft' => 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+                                $statusClasses = [
                                     'menunggu_atasan_langsung' => 'bg-amber-100 dark:bg-amber-500/30 text-amber-600 dark:text-amber-400',
                                     'menunggu_atasan_tidak_langsung' => 'bg-blue-100 dark:bg-blue-500/30 text-blue-600 dark:text-blue-400',
                                     'disetujui' => 'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400',
-                                    'ditolak' => 'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400',
+                                    'perubahan' => 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
                                     'ditangguhkan' => 'bg-orange-100 dark:bg-orange-500/30 text-orange-600 dark:text-orange-400',
-                                    default => 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                                };
-                                $statusText = match($leaveRequest->status) {
-                                    'draft' => 'Draft',
+                                    'tidak_disetujui' => 'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400',
+                                ][$leaveRequest->status] ?? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+
+                                $statusText = [
                                     'menunggu_atasan_langsung' => 'Menunggu Atasan Langsung',
                                     'menunggu_atasan_tidak_langsung' => 'Menunggu Atasan Tidak Langsung',
                                     'disetujui' => 'Disetujui',
-                                    'ditolak' => 'Ditolak',
+                                    'perubahan' => 'Perubahan',
                                     'ditangguhkan' => 'Ditangguhkan',
-                                    default => ucfirst($leaveRequest->status)
-                                };
+                                    'tidak_disetujui' => 'Tidak Disetujui',
+                                ][$leaveRequest->status] ?? ucfirst($leaveRequest->status);
                             @endphp
                             <span class="inline-flex font-medium rounded-full text-center px-3 py-1 {{ $statusClasses }}">
                                 {{ $statusText }}

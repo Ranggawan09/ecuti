@@ -239,12 +239,12 @@
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.status">
                                     <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5" 
                                          :class="{
-                                             'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300': leave.status === 'draft',
                                              'bg-amber-100 dark:bg-amber-500/30 text-amber-600 dark:text-amber-400': leave.status === 'menunggu_atasan_langsung',
                                              'bg-blue-100 dark:bg-blue-500/30 text-blue-600 dark:text-blue-400': leave.status === 'menunggu_atasan_tidak_langsung',
                                              'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400': leave.status === 'disetujui',
-                                             'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400': leave.status === 'ditolak',
-                                             'bg-orange-100 dark:bg-orange-500/30 text-orange-600 dark:text-orange-400': leave.status === 'ditangguhkan'
+                                             'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400': leave.status === 'tidak_disetujui',
+                                             'bg-orange-100 dark:bg-orange-500/30 text-orange-600 dark:text-orange-400': leave.status === 'ditangguhkan',
+                                             'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300': leave.status === 'perubahan'
                                          }"
                                          x-text="formatStatus(leave.status)">
                                     </div>
@@ -370,49 +370,61 @@
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pilih Keputusan</label>
-                    <div class="space-y-2">
+                    <div class="grid grid-cols-2 gap-2">
                         <button type="button" 
-                                class="w-full decision-btn px-4 py-3 bg-emerald-50 border-2 border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400 transition-all" 
-                                data-decision="approve">
-                            <svg class="inline-block w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                class="decision-btn px-3 py-3 bg-emerald-50 border-2 border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400 transition-all text-sm font-medium" 
+                                data-decision="disetujui">
+                            <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
-                            Setujui Permohonan Cuti
+                            Disetujui
                         </button>
                         <button type="button" 
-                                class="w-full decision-btn px-4 py-3 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 dark:bg-red-900/20 dark:border-red-700 dark:text-red-400 transition-all" 
-                                data-decision="reject">
-                            <svg class="inline-block w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                class="decision-btn px-3 py-3 bg-gray-50 border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:text-gray-300 transition-all text-sm font-medium" 
+                                data-decision="perubahan">
+                            <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                            </svg>
+                            Perubahan
+                        </button>
+                        <button type="button" 
+                                class="decision-btn px-3 py-3 bg-orange-50 border-2 border-orange-200 text-orange-700 rounded-lg hover:bg-orange-100 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-400 transition-all text-sm font-medium" 
+                                data-decision="ditangguhkan">
+                            <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 002 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 002 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            Ditangguhkan
+                        </button>
+                        <button type="button" 
+                                class="decision-btn px-3 py-3 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 dark:bg-red-900/20 dark:border-red-700 dark:text-red-400 transition-all text-sm font-medium" 
+                                data-decision="tidak_disetujui">
+                            <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                             </svg>
-                            Tolak Permohonan Cuti
+                            Tidak Disetujui
                         </button>
                     </div>
                 </div>
 
-                <!-- Form untuk Approval -->
-                <div id="approveForm" style="display: none;">
-                    <div class="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                        <p class="text-sm text-emerald-800 dark:text-emerald-200">Anda akan menyetujui permohonan cuti ini.</p>
-                    </div>
+                <!-- Catatan untuk disetujui / perubahan / ditangguhkan -->
+                <div id="catatanForm" style="display: none;">
+                    <div id="catatanInfo" class="mb-3 p-3 rounded-lg text-sm"></div>
                     <div class="mb-4">
                         <label for="catatan_approve" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Catatan (Opsional)</label>
                         <textarea id="catatan_approve" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
                     </div>
                 </div>
 
-                <!-- Form untuk Rejection -->
+                <!-- Alasan untuk tidak_disetujui -->
                 <div id="rejectForm" style="display: none;">
                     <div class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                        <p class="text-sm text-red-800 dark:text-red-200">Anda akan menolak permohonan cuti ini.</p>
+                        <p class="text-sm text-red-800 dark:text-red-200">Anda akan menolak permohonan cuti ini. Berikan alasan agar pegawai dapat melakukan perbaikan.</p>
                     </div>
                     <div class="mb-4">
                         <label for="alasan_penolakan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Alasan Penolakan <span class="text-red-500">*</span>
+                            Alasan (Opsional)
                         </label>
-                        <textarea id="alasan_penolakan" rows="4" required class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent" placeholder="Jelaskan alasan penolakan agar pegawai dapat melakukan revisi..."></textarea>
-                        <small class="text-gray-500 dark:text-gray-400 text-xs">Minimal 10 karakter. Alasan ini akan dikirim ke pegawai untuk revisi.</small>
-                        <div id="alasan_error" class="hidden text-red-500 text-sm mt-1">Alasan penolakan harus diisi minimal 10 karakter</div>
+                        <textarea id="alasan_penolakan" rows="4" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent" placeholder="Jelaskan alasan penolakan..."></textarea>
                     </div>
                 </div>
 
@@ -485,12 +497,12 @@ function leaveRequestsTable() {
         
         formatStatus(status) {
             const statusMap = {
-                'draft': 'Draft',
                 'menunggu_atasan_langsung': 'Menunggu Atasan Langsung',
                 'menunggu_atasan_tidak_langsung': 'Menunggu Atasan Tidak Langsung',
                 'disetujui': 'Disetujui',
-                'ditolak': 'Ditolak',
-                'ditangguhkan': 'Ditangguhkan'
+                'perubahan': 'Perubahan',
+                'ditangguhkan': 'Ditangguhkan',
+                'tidak_disetujui': 'Tidak Disetujui'
             };
             return statusMap[status] || status;
         },
@@ -516,17 +528,16 @@ function leaveRequestsTable() {
             document.getElementById('cuti_id').value = leaveId;
             document.getElementById('nama_pegawai').textContent = employeeName;
             document.getElementById('approvalModal').classList.remove('hidden');
-            
+
             // Reset form
-            document.querySelectorAll('.decision-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('approveForm').style.display = 'none';
+            document.querySelectorAll('.decision-btn').forEach(btn => btn.classList.remove('active', 'ring-2', 'ring-offset-2', 'ring-emerald-500', 'ring-gray-400', 'ring-orange-500', 'ring-red-500'));
+            document.getElementById('catatanForm').style.display = 'none';
             document.getElementById('rejectForm').style.display = 'none';
             document.getElementById('submitApprovalBtn').style.display = 'none';
             document.getElementById('catatan_approve').value = '';
             document.getElementById('alasan_penolakan').value = '';
-            document.getElementById('alasan_error').classList.add('hidden');
         },
-        
+
         closeApprovalModal() {
             document.getElementById('approvalModal').classList.add('hidden');
         }
@@ -534,24 +545,34 @@ function leaveRequestsTable() {
 }
 
 // Decision buttons
+const decisionInfoMap = {
+    'disetujui':    { color: 'ring-emerald-500', info: '<p class="text-emerald-800 dark:text-emerald-200">Anda akan <strong>menyetujui</strong> permohonan cuti ini.</p>', infoClass: 'bg-emerald-50 dark:bg-emerald-900/20' },
+    'perubahan':    { color: 'ring-gray-400',    info: '<p class="text-gray-700 dark:text-gray-300">Anda meminta <strong>perubahan</strong> pada permohonan cuti ini.</p>', infoClass: 'bg-gray-100 dark:bg-gray-700/50' },
+    'ditangguhkan': { color: 'ring-orange-500',  info: '<p class="text-orange-800 dark:text-orange-200">Anda akan <strong>menangguhkan</strong> permohonan cuti ini.</p>', infoClass: 'bg-orange-50 dark:bg-orange-900/20' },
+};
+
 document.addEventListener('click', function(e) {
     if (e.target.closest('.decision-btn')) {
         const btn = e.target.closest('.decision-btn');
         const decision = btn.dataset.decision;
-        
-        document.querySelectorAll('.decision-btn').forEach(b => b.classList.remove('active', 'ring-2', 'ring-offset-2'));
+
+        document.querySelectorAll('.decision-btn').forEach(b => b.classList.remove('active', 'ring-2', 'ring-offset-2', 'ring-emerald-500', 'ring-gray-400', 'ring-orange-500', 'ring-red-500'));
         btn.classList.add('active', 'ring-2', 'ring-offset-2');
-        
-        if (decision === 'approve') {
-            btn.classList.add('ring-emerald-500');
-            document.getElementById('approveForm').style.display = 'block';
-            document.getElementById('rejectForm').style.display = 'none';
-        } else {
+
+        if (decision === 'tidak_disetujui') {
             btn.classList.add('ring-red-500');
+            document.getElementById('catatanForm').style.display = 'none';
             document.getElementById('rejectForm').style.display = 'block';
-            document.getElementById('approveForm').style.display = 'none';
+        } else {
+            const info = decisionInfoMap[decision];
+            btn.classList.add(info.color);
+            const infoEl = document.getElementById('catatanInfo');
+            infoEl.innerHTML = info.info;
+            infoEl.className = 'mb-3 p-3 rounded-lg text-sm ' + info.infoClass;
+            document.getElementById('catatanForm').style.display = 'block';
+            document.getElementById('rejectForm').style.display = 'none';
         }
-        
+
         document.getElementById('submitApprovalBtn').style.display = 'block';
         document.getElementById('submitApprovalBtn').dataset.decision = decision;
     }
@@ -562,39 +583,35 @@ document.addEventListener('click', function(e) {
     if (e.target.id === 'submitApprovalBtn') {
         const cutiId = document.getElementById('cuti_id').value;
         const decision = e.target.dataset.decision;
-        
-        if (decision === 'reject') {
-            const alasan = document.getElementById('alasan_penolakan').value.trim();
-            if (alasan.length < 10) {
-                document.getElementById('alasan_error').classList.remove('hidden');
-                return;
-            }
-            document.getElementById('alasan_error').classList.add('hidden');
-        }
-        
-        const confirmMsg = decision === 'approve' 
-            ? 'Apakah Anda yakin ingin menyetujui permohonan cuti ini?' 
-            : 'Apakah Anda yakin ingin menolak permohonan cuti ini?';
-        
-        if (!confirm(confirmMsg)) return;
-        
-        const url = decision === 'approve'
+
+        const labelMap = {
+            'disetujui':    'menyetujui',
+            'perubahan':    'meminta perubahan pada',
+            'ditangguhkan': 'menangguhkan',
+            'tidak_disetujui': 'menolak'
+        };
+        if (!confirm(`Apakah Anda yakin ingin ${labelMap[decision] || decision} permohonan cuti ini?`)) return;
+
+        const isApprove = decision === 'disetujui';
+        const url = isApprove
             ? `/atasan-tidak-langsung/approvals/${cutiId}/approve`
             : `/atasan-tidak-langsung/approvals/${cutiId}/reject`;
-        
-        const data = {
-            _token: '{{ csrf_token() }}'
-        };
-        
-        if (decision === 'approve') {
+
+        const data = { _token: '{{ csrf_token() }}' };
+
+        if (isApprove) {
             data.catatan = document.getElementById('catatan_approve').value;
-        } else {
+        } else if (decision === 'tidak_disetujui') {
             data.alasan_penolakan = document.getElementById('alasan_penolakan').value;
+            data.status = 'tidak_disetujui';
+        } else {
+            data.catatan = document.getElementById('catatan_approve').value;
+            data.status = decision;
         }
-        
+
         e.target.disabled = true;
         e.target.textContent = 'Memproses...';
-        
+
         fetch(url, {
             method: 'POST',
             headers: {
@@ -609,6 +626,10 @@ document.addEventListener('click', function(e) {
                 document.getElementById('approvalModal').classList.add('hidden');
                 alert(data.message);
                 setTimeout(() => window.location.reload(), 1000);
+            } else {
+                alert(data.message || 'Terjadi kesalahan.');
+                e.target.disabled = false;
+                e.target.textContent = 'Kirim Keputusan';
             }
         })
         .catch(error => {
