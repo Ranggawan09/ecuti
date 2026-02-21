@@ -22,6 +22,12 @@ class LeaveRequestController extends Controller
 
         // Transform data for JavaScript
         $leaveRequestsData = $leaveRequests->map(function ($leave) {
+            // Ambil catatan dari approval terbaru yang memiliki note
+            $latestNoteApproval = $leave->approvals
+                ->filter(fn($a) => !empty($a->note))
+                ->sortByDesc('created_at')
+                ->first();
+
             return [
             'id' => $leave->id,
             'leave_type_name' => $leave->leaveType->name ?? '-',
@@ -31,6 +37,8 @@ class LeaveRequestController extends Controller
             'end_date_formatted' => $leave->end_date->format('d M Y'),
             'total_days' => $leave->total_days,
             'status' => $leave->status,
+            'catatan_atasan' => $latestNoteApproval?->note,
+            'catatan_dari' => $latestNoteApproval?->approver?->nama,
             ];
         });
 
