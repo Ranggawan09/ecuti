@@ -132,26 +132,44 @@
                     <h3 class="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase mb-3">Riwayat Persetujuan</h3>
                     <div class="space-y-3">
                         @foreach($leaveRequest->approvals as $approval)
+                        @php
+                            $levelText = [
+                                'atasan_langsung'        => 'Atasan Langsung',
+                                'atasan_tidak_langsung'  => 'Atasan Tidak Langsung',
+                            ][$approval->level] ?? ucfirst($approval->level);
+
+                            $approvalStatusClass = match($approval->status) {
+                                'disetujui'      => 'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400',
+                                'tidak_disetujui' => 'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400',
+                                default          => 'bg-amber-100 dark:bg-amber-500/30 text-amber-600 dark:text-amber-400',
+                            };
+
+                            $approvalStatusText = match($approval->status) {
+                                'disetujui'      => 'Disetujui',
+                                'tidak_disetujui' => 'Tidak Disetujui',
+                                default          => 'Menunggu',
+                            };
+                        @endphp
                         <div class="flex items-start gap-3 bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg">
                             <div class="w-10 h-10 shrink-0 flex items-center justify-center bg-violet-100 dark:bg-violet-500/30 rounded-full">
-                                <span class="text-sm font-medium text-violet-600 dark:text-violet-400">{{ substr($approval->user->nama ?? '-', 0, 1) }}</span>
+                                <span class="text-sm font-medium text-violet-600 dark:text-violet-400">{{ substr($approval->approver->nama ?? '-', 0, 1) }}</span>
                             </div>
                             <div class="flex-1">
-                                <div class="font-medium text-gray-800 dark:text-gray-100">{{ $approval->user->nama ?? '-' }}</div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ $approval->user->role ?? '-' }}</div>
+                                <div class="font-medium text-gray-800 dark:text-gray-100">{{ $approval->approver->nama ?? '-' }}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-400">{{ $levelText }}</div>
                                 <div class="mt-2">
-                                    <span class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 text-xs {{ $approval->status === 'approved' ? 'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400' }}">
-                                        {{ $approval->status === 'approved' ? 'Disetujui' : 'Ditolak' }}
+                                    <span class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 text-xs {{ $approvalStatusClass }}">
+                                        {{ $approvalStatusText }}
                                     </span>
                                 </div>
-                                @if($approval->notes)
+                                @if($approval->note)
                                 <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                    <strong>Catatan:</strong> {{ $approval->notes }}
+                                    <strong>Catatan:</strong> {{ $approval->note }}
                                 </div>
                                 @endif
                             </div>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ $approval->created_at->format('d/m/Y H:i') }}
+                            <div class="text-sm text-gray-500 dark:text-gray-400 shrink-0">
+                                {{ $approval->approved_at ? $approval->approved_at->format('d/m/Y H:i') : '-' }}
                             </div>
                         </div>
                         @endforeach

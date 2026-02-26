@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\LeaveRequest;
 use App\Models\Approval;
 use App\Models\Employee;
+use App\Models\User;
+use App\Services\WhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -88,6 +90,45 @@ class ApprovalController extends Controller
 
             DB::commit();
 
+            // ========== NOTIFIKASI WHATSAPP ==========
+            $wa          = new WhatsappService();
+            $leaveRequest->load('employee.user', 'employee.atasanTidakLangsung', 'leaveType');
+            $employee    = $leaveRequest->employee;
+            $namePegawai = $employee->user->nama ?? '-';
+            $leaveType   = $leaveRequest->leaveType->name ?? 'Cuti';
+            $startDate   = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
+            $endDate     = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
+            $totalDays   = $leaveRequest->total_days;
+
+            if ($hasAtasanTidakLangsung) {
+                // Notif ke atasan tidak langsung
+                $atl = $employee->atasanTidakLangsung;
+                if ($atl && $atl->whatsapp) {
+                    $wa->sendMessage($atl->whatsapp,
+                        "✅ *PENGAJUAN CUTI MENUNGGU PERSETUJUAN ANDA*\n\n"
+                        . "Pegawai: {$namePegawai}\n"
+                        . "Jenis Cuti: {$leaveType}\n"
+                        . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n\n"
+                        . "Pengajuan ini sudah disetujui atasan langsung. Silakan login untuk memproses."
+                    );
+                }
+            } else {
+                // Tidak ada ATL → notif ke semua kepegawaian
+                $kepegawaianUsers = User::where('role', 'kepegawaian')->get();
+                foreach ($kepegawaianUsers as $kpg) {
+                    if ($kpg->whatsapp) {
+                        $wa->sendMessage($kpg->whatsapp,
+                            "✅ *PENGAJUAN CUTI DISETUJUI*\n\n"
+                            . "Pegawai: {$namePegawai}\n"
+                            . "Jenis Cuti: {$leaveType}\n"
+                            . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n\n"
+                            . "Pengajuan cuti telah disetujui sepenuhnya. Silakan login untuk mencetak surat cuti."
+                        );
+                    }
+                }
+            }
+            // =========================================
+
             return response()->json([
                 'success' => true,
                 'message' => 'Permohonan cuti berhasil disetujui.',
@@ -163,8 +204,34 @@ class ApprovalController extends Controller
 
             DB::commit();
 
-            // TODO: Kirim notifikasi ke pegawai
-            // $this->sendNotificationToEmployee($leaveRequest);
+            // ========== NOTIFIKASI WHATSAPP ==========
+            // Kirim notif ke pegawai bahwa cuti ditolak/ditangguhkan
+            $leaveRequest->load('employee.user', 'leaveType');
+            $employee    = $leaveRequest->employee;
+            $pegawaiUser = $employee->user;
+            if ($pegawaiUser && $pegawaiUser->whatsapp) {
+                $wa          = new WhatsappService();
+                $leaveType   = $leaveRequest->leaveType->name ?? 'Cuti';
+                $startDate   = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
+                $endDate     = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
+                $statusLabel = match ($newStatus) {
+                    'tidak_disetujui' => 'Tidak Disetujui ❌',
+                    'ditangguhkan'    => 'Ditangguhkan ⏸️',
+                    'perubahan'       => 'Perlu Perubahan 🔄',
+                    default           => $newStatus,
+                };
+                $catatan = $request->alasan_penolakan ?? $request->catatan ?? '-';
+
+                $wa->sendMessage($pegawaiUser->whatsapp,
+                    "❌ *STATUS PENGAJUAN CUTI DIPERBARUI*\n\n"
+                    . "Jenis Cuti: {$leaveType}\n"
+                    . "Tanggal: {$startDate} s/d {$endDate}\n"
+                    . "Status: {$statusLabel}\n"
+                    . "Catatan: {$catatan}\n\n"
+                    . "Silakan login ke aplikasi untuk info lebih lanjut."
+                );
+            }
+            // =========================================
 
             $messageMap = [
                 'tidak_disetujui' => 'Permohonan cuti berhasil ditolak.',

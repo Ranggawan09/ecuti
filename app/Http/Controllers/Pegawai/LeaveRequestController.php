@@ -7,6 +7,7 @@ use App\Models\LeaveRequest;
 use App\Models\Employee;
 use App\Models\LeaveType;
 use App\Services\LeaveRequestService;
+use App\Services\WhatsappService;
 use Illuminate\Http\Request;
 
 class LeaveRequestController extends Controller
@@ -105,7 +106,7 @@ class LeaveRequestController extends Controller
         $totalDays = $startDate->diff($endDate)->days + 1;
 
         // Create leave request with auto-set employee_id and status
-        LeaveRequest::create([
+        $leaveRequest = LeaveRequest::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $validated['leave_type_id'],
             'start_date' => $validated['start_date'],
@@ -115,6 +116,26 @@ class LeaveRequestController extends Controller
             'address_during_leave' => $validated['address_during_leave'],
             'status' => 'menunggu_atasan_langsung',
         ]);
+
+        // Kirim notifikasi WA ke atasan langsung
+        $atasanLangsung = $employee->atasanLangsung;
+        if ($atasanLangsung && $atasanLangsung->whatsapp) {
+            $wa = new WhatsappService();
+            $leaveType  = $leaveRequest->leaveType->name ?? 'Cuti';
+            $startDate  = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
+            $endDate    = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
+            $totalDays  = $leaveRequest->total_days;
+            $namePegawai = $employee->user->nama ?? '-';
+
+            $message = "📋 *PENGAJUAN CUTI BARU*\n\n"
+                . "Pegawai: {$namePegawai}\n"
+                . "Jenis Cuti: {$leaveType}\n"
+                . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n"
+                . "Alasan: {$leaveRequest->reason}\n\n"
+                . "Silakan login ke aplikasi untuk memproses pengajuan ini.";
+
+            $wa->sendMessage($atasanLangsung->whatsapp, $message);
+        }
 
         return redirect()
             ->route('pegawai.leave-requests.index')
@@ -204,6 +225,36 @@ class LeaveRequestController extends Controller
         }
 
         $leaveRequest->update($validated);
+
+        // Kirim notifikasi WA ke atasan yang perlu review ulang
+        $leaveRequest->load('employee.user', 'employee.atasanLangsung', 'employee.atasanTidakLangsung');
+        $employee = $leaveRequest->employee;
+        $wa = new WhatsappService();
+        $namePegawai = $employee->user->nama ?? '-';
+        $startDate   = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
+        $endDate     = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
+
+        if ($validated['status'] === 'menunggu_atasan_tidak_langsung') {
+            $atasan = $employee->atasanTidakLangsung;
+            if ($atasan && $atasan->whatsapp) {
+                $wa->sendMessage($atasan->whatsapp,
+                    "🔄 *REVISI PENGAJUAN CUTI*\n\n"
+                    . "Pegawai: {$namePegawai}\n"
+                    . "Tanggal: {$startDate} s/d {$endDate}\n\n"
+                    . "Pengajuan cuti telah direvisi dan perlu ditinjau ulang oleh Anda."
+                );
+            }
+        } else {
+            $atasan = $employee->atasanLangsung;
+            if ($atasan && $atasan->whatsapp) {
+                $wa->sendMessage($atasan->whatsapp,
+                    "🔄 *REVISI PENGAJUAN CUTI*\n\n"
+                    . "Pegawai: {$namePegawai}\n"
+                    . "Tanggal: {$startDate} s/d {$endDate}\n\n"
+                    . "Pengajuan cuti telah direvisi dan perlu ditinjau ulang oleh Anda."
+                );
+            }
+        }
 
         if ($isAjax) {
             $statusLabel = $validated['status'] === 'menunggu_atasan_tidak_langsung'

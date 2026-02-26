@@ -1,13 +1,36 @@
 {
+  "_chart-or-0_I6R.js": {
+    "file": "assets/chart-or-0_I6R.js",
+    "name": "chart",
+    "imports": [
+      "_vendor-Dk2gt4WY.js"
+    ]
+  },
+  "_datepicker-CLQ_oLGC.js": {
+    "file": "assets/datepicker-CLQ_oLGC.js",
+    "name": "datepicker"
+  },
+  "_vendor-Dk2gt4WY.js": {
+    "file": "assets/vendor-Dk2gt4WY.js",
+    "name": "vendor",
+    "imports": [
+      "_chart-or-0_I6R.js"
+    ]
+  },
   "resources/css/app.css": {
     "file": "assets/app-NU4mbfNb.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-AtIvAh7l.js",
+    "file": "assets/app-rx1jqDsJ.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_vendor-Dk2gt4WY.js",
+      "_chart-or-0_I6R.js",
+      "_datepicker-CLQ_oLGC.js"
+    ]
   }
 }
