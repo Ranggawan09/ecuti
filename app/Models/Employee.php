@@ -19,6 +19,7 @@ class Employee extends Model
         'atasan_tidak_langsung_id',
         'masa_kerja_tahun',
         'masa_kerja_bulan',
+        'tmt_masa_kerja',
         'signature_path'
     ];
 
@@ -28,6 +29,7 @@ class Employee extends Model
         'atasan_tidak_langsung_id' => 'integer',
         'masa_kerja_tahun' => 'integer',
         'masa_kerja_bulan' => 'integer',
+        'tmt_masa_kerja' => 'date',
     ];
 
     /*
@@ -72,6 +74,26 @@ class Employee extends Model
         return $this->signature_path
             ? asset('storage/' . $this->signature_path)
             : null;
+    }
+
+    /**
+     * Get the dynamic masa kerja based on tmt_masa_kerja
+     */
+    public function getMasaKerjaAttribute(): object
+    {
+        if ($this->tmt_masa_kerja) {
+            $diff = now()->diff($this->tmt_masa_kerja);
+            return (object) [
+                'tahun' => $diff->y,
+                'bulan' => $diff->m,
+            ];
+        }
+
+        // Fallback to legacy fields if tmt is missing
+        return (object) [
+            'tahun' => $this->masa_kerja_tahun ?? 0,
+            'bulan' => $this->masa_kerja_bulan ?? 0,
+        ];
     }
 
     /*

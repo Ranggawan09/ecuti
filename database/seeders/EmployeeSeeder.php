@@ -34,6 +34,9 @@ class EmployeeSeeder extends Seeder
         ];
 
         foreach ($pegawaiUsers as $index => $pegawai) {
+            $tahun = rand(1, 15);
+            $bulan = rand(0, 11);
+
             Employee::create([
                 'user_id' => $pegawai->id,
                 'jabatan' => $positions[$index % count($positions)],
@@ -41,6 +44,9 @@ class EmployeeSeeder extends Seeder
                 'unit_kerja' => 'Pengadilan Negeri Jombang Kelas I.A',
                 'atasan_langsung_id' => $atasanLangsung->id,
                 'atasan_tidak_langsung_id' => $atasanTidakLangsung->id,
+                'masa_kerja_tahun' => $tahun,
+                'masa_kerja_bulan' => $bulan,
+                'tmt_masa_kerja' => now()->subYears($tahun)->subMonths($bulan),
             ]);
         }
     }

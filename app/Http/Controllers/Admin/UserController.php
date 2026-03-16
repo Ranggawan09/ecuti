@@ -61,9 +61,19 @@ class UserController extends Controller
 
         // Create employee record if role is pegawai
         if ($validated['role'] === 'pegawai') {
+            $tmt = null;
+            if ($request->filled('masa_kerja_tahun') || $request->filled('masa_kerja_bulan')) {
+                $tahun = $request->input('masa_kerja_tahun', 0);
+                $bulan = $request->input('masa_kerja_bulan', 0);
+                $tmt = now()->subYears($tahun)->subMonths($bulan);
+            }
+
             $user->employee()->create([
                 'atasan_langsung_id' => $validated['atasan_langsung_id'],
                 'atasan_tidak_langsung_id' => $validated['atasan_tidak_langsung_id'],
+                'tmt_masa_kerja' => $tmt,
+                'masa_kerja_tahun' => $request->input('masa_kerja_tahun'),
+                'masa_kerja_bulan' => $request->input('masa_kerja_bulan'),
             ]);
         }
 
@@ -121,12 +131,22 @@ class UserController extends Controller
 
         // Handle employee record based on role
         if ($validated['role'] === 'pegawai') {
+            $tmt = null;
+            if ($request->filled('masa_kerja_tahun') || $request->filled('masa_kerja_bulan')) {
+                $tahun = $request->input('masa_kerja_tahun', 0);
+                $bulan = $request->input('masa_kerja_bulan', 0);
+                $tmt = now()->subYears($tahun)->subMonths($bulan);
+            }
+
             // Create or update employee record
             $user->employee()->updateOrCreate(
                 ['user_id' => $user->id],
                 [
                     'atasan_langsung_id' => $validated['atasan_langsung_id'],
                     'atasan_tidak_langsung_id' => $validated['atasan_tidak_langsung_id'],
+                    'tmt_masa_kerja' => $tmt,
+                    'masa_kerja_tahun' => $request->input('masa_kerja_tahun'),
+                    'masa_kerja_bulan' => $request->input('masa_kerja_bulan'),
                 ]
             );
         } else {
