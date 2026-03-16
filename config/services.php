@@ -35,4 +35,9 @@ return [
         'token' => env('TELEGRAM_BOT_TOKEN'),
     ],
 
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN'),
+        'url'   => 'https://api.fonnte.com/send',
+    ],
+
 ];

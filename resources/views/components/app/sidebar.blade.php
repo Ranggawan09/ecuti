@@ -10,7 +10,7 @@
     <!-- Sidebar -->
     <div
         id="sidebar"
-        class="flex lg:flex! flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 2xl:w-64! shrink-0 bg-white dark:bg-gray-800 p-4 transition-all duration-200 ease-in-out border-r border-gray-200 dark:border-gray-700/60"
+        class="flex lg:flex! flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 shrink-0 bg-white dark:bg-gray-800 p-4 transition-all duration-200 ease-in-out border-r border-gray-200 dark:border-gray-700/60"
         :class="sidebarOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-64'"
         @click.outside="sidebarOpen = false"
         @keydown.escape.window="sidebarOpen = false"
@@ -51,8 +51,8 @@
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
-                    <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                    <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Menu Pegawai</span>
+                    <span class="hidden lg:block lg:sidebar-expanded:hidden text-center w-6" aria-hidden="true">•••</span>
+                    <span class="lg:hidden lg:sidebar-expanded:block">Menu Pegawai</span>
                 </h3>
                 <ul class="mt-3">
                     <!-- Dashboard -->
@@ -63,7 +63,7 @@
                                     <path d="M5.936.278A7.983 7.983 0 0 1 8 0a8 8 0 1 1-8 8c0-.722.104-1.413.278-2.064a1 1 0 1 1 1.932.516A5.99 5.99 0 0 0 2 8a6 6 0 1 0 6-6c-.53 0-1.045.076-1.548.21A1 1 0 1 1 5.936.278Z" />
                                     <path d="M6.068 7.482A2.003 2.003 0 0 0 8 10a2 2 0 1 0-.518-3.932L3.707 2.293a1 1 0 0 0-1.414 1.414l3.775 3.775Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Dashboard</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Dashboard</span>
                             </div>
                         </a>
                     </li>
@@ -74,7 +74,7 @@
                                 <svg class="shrink-0 fill-current @if(Route::is('pegawai.leave-requests.create')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                                     <path d="M14.3 2.3L5 11.6 1.7 8.3c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l4 4c.2.2.4.3.7.3.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Ajukan Cuti</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Ajukan Cuti</span>
                             </div>
                         </a>
                     </li>
@@ -86,7 +86,7 @@
                                     <path d="M14 0H2C.9 0 0 .9 0 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2ZM2 14V2h12v12H2Z" />
                                     <path d="M4 8h3V5H4v3Zm0 4h3V9H4v3Zm5-8v3h3V4H9Zm0 4h3v3H9V8Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Riwayat Cuti</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Riwayat Cuti</span>
                             </div>
                         </a>
                     </li>
@@ -99,8 +99,8 @@
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
-                    <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                    <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Atasan Langsung</span>
+                    <span class="hidden lg:block lg:sidebar-expanded:hidden text-center w-6" aria-hidden="true">•••</span>
+                    <span class="lg:hidden lg:sidebar-expanded:block">Atasan Langsung</span>
                 </h3>
                 <ul class="mt-3">
                     <!-- Dashboard -->
@@ -111,7 +111,7 @@
                                     <path d="M5.936.278A7.983 7.983 0 0 1 8 0a8 8 0 1 1-8 8c0-.722.104-1.413.278-2.064a1 1 0 1 1 1.932.516A5.99 5.99 0 0 0 2 8a6 6 0 1 0 6-6c-.53 0-1.045.076-1.548.21A1 1 0 1 1 5.936.278Z" />
                                     <path d="M6.068 7.482A2.003 2.003 0 0 0 8 10a2 2 0 1 0-.518-3.932L3.707 2.293a1 1 0 0 0-1.414 1.414l3.775 3.775Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Dashboard</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Dashboard</span>
                             </div>
                         </a>
                     </li>
@@ -122,7 +122,19 @@
                                 <svg class="shrink-0 fill-current @if(Route::is('atasan-langsung.approvals.index')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                                     <path d="M14.3 2.3L5 11.6 1.7 8.3c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l4 4c.2.2.4.3.7.3.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Persetujuan Cuti</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Persetujuan Cuti</span>
+                            </div>
+                        </a>
+                    </li>
+                    <!-- Riwayat Cuti -->
+                    <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 @if(Route::is('atasan-langsung.leave-history.index')){{ 'bg-gradient-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' }}@endif">
+                        <a class="block text-gray-800 dark:text-gray-100 truncate transition @if(!Route::is('atasan-langsung.leave-history.index')){{ 'hover:text-gray-900 dark:hover:text-white' }}@endif" href="{{ route('atasan-langsung.leave-history.index') }}">
+                            <div class="flex items-center">
+                                <svg class="shrink-0 fill-current @if(Route::is('atasan-langsung.leave-history.index')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M14 0H2C.9 0 0 .9 0 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2ZM2 14V2h12v12H2Z" />
+                                    <path d="M4 8h3V5H4v3Zm0 4h3V9H4v3Zm5-8v3h3V4H9Zm0 4h3v3H9V8Z" />
+                                </svg>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Riwayat Cuti</span>
                             </div>
                         </a>
                     </li>
@@ -135,8 +147,8 @@
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
-                    <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                    <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Atasan Tidak Langsung</span>
+                    <span class="hidden lg:block lg:sidebar-expanded:hidden text-center w-6" aria-hidden="true">•••</span>
+                    <span class="lg:hidden lg:sidebar-expanded:block">Atasan Tidak Langsung</span>
                 </h3>
                 <ul class="mt-3">
                     <!-- Dashboard -->
@@ -147,7 +159,7 @@
                                     <path d="M5.936.278A7.983 7.983 0 0 1 8 0a8 8 0 1 1-8 8c0-.722.104-1.413.278-2.064a1 1 0 1 1 1.932.516A5.99 5.99 0 0 0 2 8a6 6 0 1 0 6-6c-.53 0-1.045.076-1.548.21A1 1 0 1 1 5.936.278Z" />
                                     <path d="M6.068 7.482A2.003 2.003 0 0 0 8 10a2 2 0 1 0-.518-3.932L3.707 2.293a1 1 0 0 0-1.414 1.414l3.775 3.775Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Dashboard</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Dashboard</span>
                             </div>
                         </a>
                     </li>
@@ -158,7 +170,19 @@
                                 <svg class="shrink-0 fill-current @if(Route::is('atasan-tidak-langsung.approvals.index')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                                     <path d="M14.3 2.3L5 11.6 1.7 8.3c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l4 4c.2.2.4.3.7.3.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Persetujuan Final</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Persetujuan Final</span>
+                            </div>
+                        </a>
+                    </li>
+                    <!-- Riwayat Cuti -->
+                    <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 @if(Route::is('atasan-tidak-langsung.leave-history.index')){{ 'bg-gradient-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' }}@endif">
+                        <a class="block text-gray-800 dark:text-gray-100 truncate transition @if(!Route::is('atasan-tidak-langsung.leave-history.index')){{ 'hover:text-gray-900 dark:hover:text-white' }}@endif" href="{{ route('atasan-tidak-langsung.leave-history.index') }}">
+                            <div class="flex items-center">
+                                <svg class="shrink-0 fill-current @if(Route::is('atasan-tidak-langsung.leave-history.index')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M14 0H2C.9 0 0 .9 0 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2ZM2 14V2h12v12H2Z" />
+                                    <path d="M4 8h3V5H4v3Zm0 4h3V9H4v3Zm5-8v3h3V4H9Zm0 4h3v3H9V8Z" />
+                                </svg>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Riwayat Cuti</span>
                             </div>
                         </a>
                     </li>
@@ -171,8 +195,8 @@
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
-                    <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                    <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Kepegawaian</span>
+                    <span class="hidden lg:block lg:sidebar-expanded:hidden text-center w-6" aria-hidden="true">•••</span>
+                    <span class="lg:hidden lg:sidebar-expanded:block">Kepegawaian</span>
                 </h3>
                 <ul class="mt-3">
                     <!-- Dashboard -->
@@ -183,7 +207,7 @@
                                     <path d="M5.936.278A7.983 7.983 0 0 1 8 0a8 8 0 1 1-8 8c0-.722.104-1.413.278-2.064a1 1 0 1 1 1.932.516A5.99 5.99 0 0 0 2 8a6 6 0 1 0 6-6c-.53 0-1.045.076-1.548.21A1 1 0 1 1 5.936.278Z" />
                                     <path d="M6.068 7.482A2.003 2.003 0 0 0 8 10a2 2 0 1 0-.518-3.932L3.707 2.293a1 1 0 0 0-1.414 1.414l3.775 3.775Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Dashboard</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Dashboard</span>
                             </div>
                         </a>
                     </li>
@@ -195,7 +219,18 @@
                                     <path d="M14 0H2C.9 0 0 .9 0 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2ZM2 14V2h12v12H2Z" />
                                     <path d="M4 8h3V5H4v3Zm0 4h3V9H4v3Zm5-8v3h3V4H9Zm0 4h3v3H9V8Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Data Cuti Pegawai</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Data Cuti Pegawai</span>
+                            </div>
+                        </a>
+                    </li>
+                    <!-- Riwayat Pengajuan Cuti -->
+                    <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 @if(Route::is('kepegawaian.leave-requests.history')){{ 'bg-gradient-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' }}@endif">
+                        <a class="block text-gray-800 dark:text-gray-100 truncate transition @if(!Route::is('kepegawaian.leave-requests.history')){{ 'hover:text-gray-900 dark:hover:text-white' }}@endif" href="{{ route('kepegawaian.leave-requests.history') }}">
+                            <div class="flex items-center">
+                                <svg class="shrink-0 fill-current @if(Route::is('kepegawaian.leave-requests.history')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm1 12H7V7h2v5Zm0-6H7V4h2v2Z" />
+                                </svg>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Riwayat Pengajuan Cuti</span>
                             </div>
                         </a>
                     </li>
@@ -208,8 +243,8 @@
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
-                    <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                    <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Administrator</span>
+                    <span class="hidden lg:block lg:sidebar-expanded:hidden text-center w-6" aria-hidden="true">•••</span>
+                    <span class="lg:hidden lg:sidebar-expanded:block">Administrator</span>
                 </h3>
                 <ul class="mt-3">
                     <!-- Dashboard -->
@@ -220,7 +255,7 @@
                                     <path d="M5.936.278A7.983 7.983 0 0 1 8 0a8 8 0 1 1-8 8c0-.722.104-1.413.278-2.064a1 1 0 1 1 1.932.516A5.99 5.99 0 0 0 2 8a6 6 0 1 0 6-6c-.53 0-1.045.076-1.548.21A1 1 0 1 1 5.936.278Z" />
                                     <path d="M6.068 7.482A2.003 2.003 0 0 0 8 10a2 2 0 1 0-.518-3.932L3.707 2.293a1 1 0 0 0-1.414 1.414l3.775 3.775Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Dashboard</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Dashboard</span>
                             </div>
                         </a>
                     </li>
@@ -231,7 +266,7 @@
                                 <svg class="shrink-0 fill-current @if(Route::is('admin.users.index')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                                     <path d="M11 9.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM5.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0ZM11 10a5 5 0 0 1 5 5v1H6v-1a5 5 0 0 1 5-5ZM5 10a5 5 0 0 0-5 5v1h5v-1a4.99 4.99 0 0 1 .65-2.43A4.984 4.984 0 0 0 5 10Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Manajemen User</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Manajemen User</span>
                             </div>
                         </a>
                     </li>
@@ -243,7 +278,7 @@
                                     <path d="M14 0H2C.9 0 0 .9 0 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2ZM2 14V2h12v12H2Z" />
                                     <path d="M4 8h3V5H4v3Zm0 4h3V9H4v3Zm5-8v3h3V4H9Zm0 4h3v3H9V8Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Master Jenis Cuti</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Master Jenis Cuti</span>
                             </div>
                         </a>
                     </li>
@@ -254,7 +289,7 @@
                                 <svg class="shrink-0 fill-current @if(Route::is('admin.activity-logs.index')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                                     <path d="M2 6H0V2h2v4ZM5 6H3V0h2v6ZM8 6H6V3h2v3ZM11 6H9V1h2v5ZM14 6h-2V4h2v2ZM16 8v7H0V8h16Zm-2 5V10H2v3h12Z" />
                                 </svg>
-                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Log Aktivitas</span>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Log Aktivitas</span>
                             </div>
                         </a>
                     </li>
@@ -265,8 +300,8 @@
             <!-- Logout Section -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
-                    <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                    <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Account</span>
+                    <span class="hidden lg:block lg:sidebar-expanded:hidden text-center w-6" aria-hidden="true">•••</span>
+                    <span class="lg:hidden lg:sidebar-expanded:block">Account</span>
                 </h3>
                 <ul class="mt-3">
                     <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0">
@@ -277,7 +312,7 @@
                                     <svg class="shrink-0 fill-current text-red-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
                                         <path d="M15 5h-4V4c0-1.1-.9-2-2-2H3C1.9 2 1 2.9 1 4v8c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2v-1h4c.6 0 1-.4 1-1V6c0-.6-.4-1-1-1ZM9 12H3V4h6v8Zm5-2h-3V6h3v4Z" />
                                     </svg>
-                                    <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Logout</span>
+                                    <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Logout</span>
                                 </div>
                             </button>
                         </form>
@@ -288,7 +323,7 @@
         </div>
 
         <!-- Expand / collapse button -->
-        <div class="pt-3 hidden lg:inline-flex 2xl:hidden justify-end mt-auto">
+        <div class="pt-3 hidden lg:inline-flex justify-end mt-auto">
             <div class="w-12 pl-4 pr-3 py-2">
                 <button class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 transition-colors" @click="sidebarExpanded = !sidebarExpanded">
                     <span class="sr-only">Expand / collapse sidebar</span>

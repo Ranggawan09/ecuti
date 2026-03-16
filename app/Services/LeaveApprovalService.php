@@ -19,7 +19,8 @@ class LeaveApprovalService
         LeaveRequest $leaveRequest,
         User $approver,
         string $note = null
-    ): void {
+        ): void
+    {
         DB::transaction(function () use ($leaveRequest, $approver, $note) {
 
             $approval = Approval::where('leave_request_id', $leaveRequest->id)
@@ -27,8 +28,8 @@ class LeaveApprovalService
                 ->firstOrFail();
 
             $approval->update([
-                'status'      => 'disetujui',
-                'note'        => $note,
+                'status' => 'disetujui',
+                'note' => $note,
                 'approved_at' => now(),
             ]);
 
@@ -58,19 +59,20 @@ class LeaveApprovalService
         LeaveRequest $leaveRequest,
         User $approver,
         string $note
-    ): void {
+        ): void
+    {
         DB::transaction(function () use ($leaveRequest, $approver, $note) {
 
             Approval::where('leave_request_id', $leaveRequest->id)
                 ->where('approver_id', $approver->id)
                 ->update([
-                    'status'      => 'ditolak',
-                    'note'        => $note,
-                    'approved_at' => now(),
-                ]);
+                'status' => 'tidak_disetujui',
+                'note' => $note,
+                'approved_at' => now(),
+            ]);
 
             $leaveRequest->update([
-                'status' => 'ditolak'
+                'status' => 'tidak_disetujui'
             ]);
 
             $this->notifyEmployee(
@@ -130,7 +132,8 @@ class LeaveApprovalService
     private function notifyEmployee(
         LeaveRequest $leaveRequest,
         string $message
-    ): void {
+        ): void
+    {
         Notification::create([
             'user_id' => $leaveRequest->employee->user_id,
             'channel' => 'whatsapp',

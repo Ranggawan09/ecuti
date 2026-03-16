@@ -80,12 +80,12 @@ class LeaveRequestsExport implements FromCollection, WithHeadings, WithMapping, 
     private function formatStatus($status): string
     {
         $statusMap = [
-            'draft' => 'Draft',
             'menunggu_atasan_langsung' => 'Menunggu Atasan Langsung',
             'menunggu_atasan_tidak_langsung' => 'Menunggu Atasan Tidak Langsung',
             'disetujui' => 'Disetujui',
-            'ditolak' => 'Ditolak',
+            'perubahan' => 'Perubahan',
             'ditangguhkan' => 'Ditangguhkan',
+            'tidak_disetujui' => 'Tidak Disetujui',
         ];
 
         return $statusMap[$status] ?? $status;

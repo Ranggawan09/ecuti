@@ -159,6 +159,42 @@
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+                        <!-- Masa Kerja -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="masa_kerja_tahun">
+                                    Masa Kerja (Tahun)
+                                </label>
+                                <input
+                                    id="masa_kerja_tahun"
+                                    name="masa_kerja_tahun"
+                                    class="form-input w-full @error('masa_kerja_tahun') border-red-300 @enderror"
+                                    type="number"
+                                    min="0"
+                                    value="{{ old('masa_kerja_tahun', 0) }}"
+                                >
+                                @error('masa_kerja_tahun')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="masa_kerja_bulan">
+                                    Masa Kerja (Bulan)
+                                </label>
+                                <input
+                                    id="masa_kerja_bulan"
+                                    name="masa_kerja_bulan"
+                                    class="form-input w-full @error('masa_kerja_bulan') border-red-300 @enderror"
+                                    type="number"
+                                    min="0"
+                                    max="11"
+                                    value="{{ old('masa_kerja_bulan', 0) }}"
+                                >
+                                @error('masa_kerja_bulan')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Password -->

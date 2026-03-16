@@ -7,36 +7,33 @@ use App\Models\LeaveRequest;
 
 class LeaveRequestPolicy
 {
-    /**
-     * Pegawai hanya boleh melihat cutinya sendiri
-     */
     public function view(User $user, LeaveRequest $leaveRequest): bool
     {
         if ($user->role === 'pegawai') {
-            return $leaveRequest->employee->user_id === $user->id;
+            $employeeUserId = $leaveRequest->employee?->user_id
+                ?? $leaveRequest->load('employee')->employee?->user_id;
+
+            return $employeeUserId === $user->id;
         }
 
         return in_array($user->role, [
             'atasan_langsung',
             'atasan_tidak_langsung',
-            'kepegawaian'
+            'kepegawaian',
         ]);
     }
 
-    /**
-     * Approval hanya oleh approver yang sah & status sesuai
-     */
     public function approve(User $user, LeaveRequest $leaveRequest): bool
     {
         return $leaveRequest->approvals()
             ->where('approver_id', $user->id)
-            ->where('status', 'menunggu')
+            ->whereIn('status', [
+                'menunggu_atasan_langsung',
+                'menunggu_atasan_tidak_langsung',
+            ])
             ->exists();
     }
 
-    /**
-     * Penolakan juga dibatasi approver sah
-     */
     public function reject(User $user, LeaveRequest $leaveRequest): bool
     {
         return $this->approve($user, $leaveRequest);

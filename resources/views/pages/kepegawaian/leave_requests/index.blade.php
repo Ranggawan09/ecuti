@@ -130,13 +130,7 @@
                 </div>
             </div>
 
-            <!-- Add button -->
-            <a href="{{ route('kepegawaian.leave-requests.create') }}" class="btn bg-violet-500 hover:bg-violet-600 text-white">
-                <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1Z" />
-                </svg>
-                <span class="ml-2">Tambah Cuti</span>
-            </a>
+
         </div>
 
     </div>
@@ -243,12 +237,12 @@
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.status">
                                     <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5" 
                                          :class="{
-                                             'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300': leave.status === 'draft',
                                              'bg-amber-100 dark:bg-amber-500/30 text-amber-600 dark:text-amber-400': leave.status === 'menunggu_atasan_langsung',
                                              'bg-blue-100 dark:bg-blue-500/30 text-blue-600 dark:text-blue-400': leave.status === 'menunggu_atasan_tidak_langsung',
                                              'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400': leave.status === 'disetujui',
-                                             'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400': leave.status === 'ditolak',
-                                             'bg-orange-100 dark:bg-orange-500/30 text-orange-600 dark:text-orange-400': leave.status === 'ditangguhkan'
+                                             'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400': leave.status === 'tidak_disetujui',
+                                             'bg-orange-100 dark:bg-orange-500/30 text-orange-600 dark:text-orange-400': leave.status === 'ditangguhkan',
+                                             'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300': leave.status === 'perubahan'
                                          }"
                                          x-text="formatStatus(leave.status)">
                                     </div>
@@ -261,16 +255,13 @@
                                                 <circle cx="8" cy="8" r="3" />
                                             </svg>
                                         </a>
-                                        <a :href="'/kepegawaian/leave-requests/' + leave.id + '/edit'" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" title="Edit">
+                                        <!-- Print button for approved requests -->
+                                        <a x-show="leave.status === 'disetujui'" :href="'/kepegawaian/leave-requests/' + leave.id + '/print'" target="_blank" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-emerald-500" title="Cetak">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                                                <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4ZM4.6 14H2v-2.6l6-6L10.6 8l-6 6ZM12 6.6 9.4 4 11 2.4 13.6 5 12 6.6Z" />
+                                                <path d="M14 0H2c-.6 0-1 .4-1 1v3c0 .6.4 1 1 1h1v2H2c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h1v1c0 .6.4 1 1 1h8c.6 0 1-.4 1-1v-1h1c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2h-1V5h1c.6 0 1-.4 1-1V1c0-.6-.4-1-1-1ZM4 14V9h8v5H4Zm8-9H4V2h8v3Z" />
                                             </svg>
                                         </a>
-                                        <button @click="deleteLeaveRequest(leave.id)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-red-500" title="Delete">
-                                            <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
-                                                <path d="M5 7h2v6H5V7Zm4 0h2v6H9V7Zm3-6v2h4v2h-1v10c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V5H0V3h4V1c0-.6.4-1 1-1h6c.6 0 1 .4 1 1ZM6 2v1h4V2H6Zm7 3H3v9h10V5Z" />
-                                            </svg>
-                                        </button>
+
                                     </div>
                                 </td>
                             </tr>
@@ -368,39 +359,17 @@ function leaveRequestsTable() {
         
         formatStatus(status) {
             const statusMap = {
-                'draft': 'Draft',
                 'menunggu_atasan_langsung': 'Menunggu Atasan Langsung',
                 'menunggu_atasan_tidak_langsung': 'Menunggu Atasan Tidak Langsung',
                 'disetujui': 'Disetujui',
-                'ditolak': 'Ditolak',
-                'ditangguhkan': 'Ditangguhkan'
+                'perubahan': 'Perubahan',
+                'ditangguhkan': 'Ditangguhkan',
+                'tidak_disetujui': 'Tidak Disetujui'
             };
             return statusMap[status] || status;
         },
         
-        deleteLeaveRequest(leaveId) {
-            if (confirm('Apakah Anda yakin ingin menghapus data cuti ini?')) {
-                // Submit delete form
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/kepegawaian/leave-requests/' + leaveId;
-                
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
-                
-                const methodField = document.createElement('input');
-                methodField.type = 'hidden';
-                methodField.name = '_method';
-                methodField.value = 'DELETE';
-                
-                form.appendChild(csrfToken);
-                form.appendChild(methodField);
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
+
     }
 }
 </script>

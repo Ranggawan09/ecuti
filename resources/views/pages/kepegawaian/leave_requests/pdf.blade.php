@@ -48,7 +48,7 @@
             font-weight: 600;
             display: inline-block;
         }
-        .status-draft {
+        .status-perubahan {
             background-color: #f3f4f6;
             color: #4b5563;
         }
@@ -64,7 +64,7 @@
             background-color: #d1fae5;
             color: #059669;
         }
-        .status-ditolak {
+        .status-tidak-disetujui {
             background-color: #fee2e2;
             color: #dc2626;
         }
@@ -110,20 +110,20 @@
                 <td>
                     @php
                         $statusClass = match($leaveRequest->status) {
-                            'draft' => 'status-draft',
                             'menunggu_atasan_langsung' => 'status-menunggu-langsung',
                             'menunggu_atasan_tidak_langsung' => 'status-menunggu-tidak-langsung',
                             'disetujui' => 'status-disetujui',
-                            'ditolak' => 'status-ditolak',
+                            'perubahan' => 'status-perubahan',
+                            'tidak_disetujui' => 'status-tidak-disetujui',
                             'ditangguhkan' => 'status-ditangguhkan',
-                            default => 'status-draft'
+                            default => 'status-perubahan'
                         };
                         $statusText = match($leaveRequest->status) {
-                            'draft' => 'Draft',
                             'menunggu_atasan_langsung' => 'Menunggu Atasan Langsung',
                             'menunggu_atasan_tidak_langsung' => 'Menunggu Atasan Tidak Langsung',
                             'disetujui' => 'Disetujui',
-                            'ditolak' => 'Ditolak',
+                            'perubahan' => 'Perubahan',
+                            'tidak_disetujui' => 'Tidak Disetujui',
                             'ditangguhkan' => 'Ditangguhkan',
                             default => ucfirst($leaveRequest->status)
                         };

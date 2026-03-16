@@ -33,10 +33,10 @@
         }
     </script>
 </head>
-<body class="font-inter antialiased bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400" :class="{ 'sidebar-expanded': sidebarExpanded }" x-data="{ sidebarOpen: false, sidebarExpanded: localStorage.getItem('sidebar-expanded') == 'true' }" x-init="$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))">
+<body class="font-inter antialiased bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400" :class="{ 'sidebar-expanded': sidebarExpanded }" x-data="{ sidebarOpen: false, sidebarExpanded: localStorage.getItem('sidebar-expanded') != 'false' }" x-init="$watch('sidebarExpanded', value => localStorage.setItem('sidebar-expanded', value))">
 
     <script>
-        if (localStorage.getItem('sidebar-expanded') == 'true') {
+        if (localStorage.getItem('sidebar-expanded') != 'false') {
             document.querySelector('body').classList.add('sidebar-expanded');
         } else {
             document.querySelector('body').classList.remove('sidebar-expanded');
@@ -89,6 +89,27 @@
                                     <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm3.5 10.1l-1.4 1.4L8 9.4l-2.1 2.1-1.4-1.4L6.6 8 4.5 5.9l1.4-1.4L8 6.6l2.1-2.1 1.4 1.4L9.4 8l2.1 2.1Z" />
                                 </svg>
                                 <div class="text-sm font-medium">{{ session('error') }}</div>
+                            </div>
+                            <button class="opacity-70 hover:opacity-80 ml-3 mt-[3px]" @click="show = false">
+                                <span class="sr-only">Close</span>
+                                <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M12.7 3.3c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0L8 5.2 4.7 1.9c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4L6.6 6.6 3.3 9.9c-.4.4-.4 1 0 1.4.2.2.4.3.7.3.3 0 .5-.1.7-.3l3.3-3.3 3.3 3.3c.2.2.5.3.7.3.2 0 .5-.1.7-.3.4-.4.4-1 0-1.4L9.4 6.6l3.3-3.3Z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if(session('warning'))
+                <div class="m-4" x-data="{ show: true }" x-show="show" x-transition>
+                    <div class="px-4 py-2 rounded-lg bg-amber-100 dark:bg-amber-500/30 border border-amber-200 dark:border-amber-500/60 text-amber-600 dark:text-amber-400">
+                        <div class="flex w-full justify-between items-start">
+                            <div class="flex">
+                                <svg class="shrink-0 fill-current opacity-80 mt-[3px] mr-3" width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8Zm1 12H7V7h2v5Zm0-6H7V4h2v2Z" />
+                                </svg>
+                                <div class="text-sm font-medium">{{ session('warning') }}</div>
                             </div>
                             <button class="opacity-70 hover:opacity-80 ml-3 mt-[3px]" @click="show = false">
                                 <span class="sr-only">Close</span>

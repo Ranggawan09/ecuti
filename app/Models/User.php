@@ -115,4 +115,44 @@ class User extends Authenticatable
             }
         });
     }
+
+    /**
+     * Get the URL to the user's signature (via employee)
+     */
+    public function getSignatureUrlAttribute(): ?string
+    {
+        if ($this->employee && $this->employee->signature_path) {
+            return $this->employee->signature_url;
+        }
+
+        return null;
+    }
+
+    /**
+     * Update the user's signature (delegates to employee)
+     */
+    public function updateSignature($signature): void
+    {
+        if ($this->employee) {
+            $this->employee->updateSignature($signature);
+        }
+    }
+
+    /**
+     * Delete the user's signature (delegates to employee)
+     */
+    public function deleteSignature(): void
+    {
+        if ($this->employee) {
+            $this->employee->deleteSignature();
+        }
+    }
+
+    /**
+     * Get signature path (for compatibility)
+     */
+    public function getSignaturePathAttribute(): ?string
+    {
+        return $this->employee?->signature_path;
+    }
 }

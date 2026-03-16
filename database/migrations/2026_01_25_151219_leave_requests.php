@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class extends Migration 
 {
     /**
      * Run the migrations.
@@ -12,24 +12,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('leave_requests', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
-    $table->foreignId('leave_type_id')->constrained();
-    $table->date('start_date');
-    $table->date('end_date');
-    $table->integer('total_days');
-    $table->text('reason');
-    $table->string('address_during_leave');
-    $table->enum('status', [
-        'draft',
-        'menunggu_atasan_langsung',
-        'menunggu_atasan_tidak_langsung',
-        'disetujui',
-        'ditolak',
-        'ditangguhkan'
-    ]);
-    $table->timestamps();   
-    });
+            $table->id();
+            $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('leave_type_id')->constrained();
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->integer('total_days');
+            $table->text('reason');
+            $table->string('address_during_leave');
+            $table->enum('status', [
+                'menunggu_atasan_langsung',
+                'menunggu_atasan_tidak_langsung',
+                'disetujui',
+                'perubahan',
+                'ditangguhkan',
+                'tidak_disetujui'
+            ])->default('menunggu_atasan_langsung');
+            $table->timestamps();
+        });
 
     }
 
