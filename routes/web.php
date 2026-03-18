@@ -12,13 +12,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->as('kepegawaian.')
         ->group(function () {
 
-            Route::get('/dashboard', fn() => view('pages.kepegawaian.dashboard'))
+            Route::get('/dashboard', [\App\Http\Controllers\Kepegawaian\DashboardController::class, 'index'])
                 ->name('dashboard');
 
             // Export route must be before resource routes
             Route::get('leave-requests/export',
             [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class , 'export']
             )->name('leave-requests.export');
+
+            // Update Letter Number (no_urut & nomor_surat)
+            Route::patch('leave-requests/{leaveRequest}/letter-number',
+                [\App\Http\Controllers\Kepegawaian\LeaveRequestController::class, 'updateLetterNumber']
+            )->name('leave-requests.letter-number');
 
             // Print route must be before resource routes
             Route::get('leave-requests/{leaveRequest}/print',

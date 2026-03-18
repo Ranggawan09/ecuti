@@ -19,7 +19,9 @@ class LeaveRequest extends Model
         'reason',
         'address_during_leave',
         'status',
-        'printed_at'
+        'printed_at',
+        'no_urut',
+        'nomor_surat',
     ];
 
     protected $casts = [
