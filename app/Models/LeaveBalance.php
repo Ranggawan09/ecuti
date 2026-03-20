@@ -15,6 +15,7 @@ class LeaveBalance extends Model
         'total_days',
         'used_days',
         'remaining_days',
+        'carried_over_days',
     ];
 
     /* ================== RELATIONS ================== */

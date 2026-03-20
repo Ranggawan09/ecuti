@@ -72,6 +72,8 @@
                 type="date"
                 class="form-input w-full"
                 value="{{ $leaveRequest->start_date->format('Y-m-d') }}"
+                min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                max="{{ \Carbon\Carbon::now()->endOfYear()->format('Y-m-d') }}"
                 required
             >
         </div>
@@ -85,6 +87,8 @@
                 type="date"
                 class="form-input w-full"
                 value="{{ $leaveRequest->end_date->format('Y-m-d') }}"
+                min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                max="{{ \Carbon\Carbon::now()->endOfYear()->format('Y-m-d') }}"
                 required
             >
         </div>

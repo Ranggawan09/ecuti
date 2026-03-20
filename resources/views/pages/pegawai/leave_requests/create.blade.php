@@ -19,7 +19,7 @@
         <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <h2 class="font-semibold text-gray-800 dark:text-gray-100">Form Pengajuan Cuti</h2>
         </div>
-        <form action="{{ route('pegawai.leave-requests.store') }}" method="POST" x-data="leaveRequestForm()">
+        <form action="{{ route('pegawai.leave-requests.store') }}" method="POST" x-data="leaveRequestForm(@js($leaveTypes))">
             @csrf
             <div class="p-6 space-y-6">
 
@@ -51,17 +51,27 @@
                     <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-2" for="leave_type_id">
                         Jenis Cuti <span class="text-red-500">*</span>
                     </label>
-                    <select id="leave_type_id" name="leave_type_id" class="form-select w-full @error('leave_type_id') border-red-300 @enderror" required>
+                    <select id="leave_type_id" name="leave_type_id" class="form-select w-full @error('leave_type_id') border-red-300 @enderror" x-model="leaveTypeId" @change="checkLeaveType()" required>
                         <option value="">Pilih Jenis Cuti</option>
-                        @foreach($leaveTypes as $type)
-                            <option value="{{ $type->id }}" {{ old('leave_type_id') == $type->id ? 'selected' : '' }}>
-                                {{ $type->name }} (Max: {{ $type->max_days }} hari)
-                            </option>
-                        @endforeach
+                        <template x-for="type in leaveTypes" :key="type.id">
+                            <option :value="type.id" x-text="`${type.name} (Max: ${type.max_days} hari)`" :selected="type.id == '{{ old('leave_type_id') }}'"></option>
+                        </template>
                     </select>
                     @error('leave_type_id')
                         <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
                     @enderror
+
+                    <!-- Penangguhan Checkbox (Only for Cuti Tahunan) -->
+                    <div x-show="isCutiTahunan" class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-lg">
+                        <label class="flex items-start text-sm cursor-pointer">
+                            <input type="checkbox" name="is_penangguhan" x-model="isPenangguhan" @change="calculateDays()" value="1" class="form-checkbox text-yellow-500 rounded border-gray-300 dark:border-gray-600 mt-0.5" {{ old('is_penangguhan') ? 'checked' : '' }}>
+                            <span class="ml-2 text-gray-700 dark:text-gray-300">
+                                <strong>Ajukan Penangguhan Sisa Cuti</strong><br>
+                                <span class="text-gray-500 dark:text-gray-400 text-xs">Centang opsi ini HANYA jika Anda ingin menangguhkan (menyimpan) sisa cuti tahun ini hingga maksimal 6 hari untuk dipakai di tahun depan. Pengajuan Anda tidak akan dianggap sebagai cuti libur.</span>
+                            </span>
+                        </label>
+                        <p x-show="isPenangguhan && totalDays > 6" class="text-sm text-red-500 mt-2 font-medium">⚠️ Maksimal penangguhan cuti adalah 6 hari.</p>
+                    </div>
                 </div>
 
                 <!-- Date Range -->
@@ -78,6 +88,8 @@
                             value="{{ old('start_date') }}"
                             x-model="startDate"
                             @change="calculateDays()"
+                            min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                            max="{{ \Carbon\Carbon::now()->endOfYear()->format('Y-m-d') }}"
                             required
                         >
                         @error('start_date')
@@ -97,6 +109,8 @@
                             value="{{ old('end_date') }}"
                             x-model="endDate"
                             @change="calculateDays()"
+                            min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                            max="{{ \Carbon\Carbon::now()->endOfYear()->format('Y-m-d') }}"
                             required
                         >
                         @error('end_date')
@@ -114,6 +128,9 @@
                         <span x-text="totalDays > 0 ? totalDays + ' hari' : '-'"></span>
                     </div>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total hari akan dihitung otomatis berdasarkan tanggal mulai dan selesai</p>
+                    @error('total_days')
+                        <p class="text-sm text-red-500 mt-1 font-medium">⚠️ {{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Reason -->
@@ -161,11 +178,11 @@
                     <a href="{{ route('pegawai.leave-requests.index') }}" class="btn bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-300">
                         Batal
                     </a>
-                    <button type="submit" class="btn bg-violet-500 hover:bg-violet-600 text-white">
+                    <button type="submit" class="btn bg-violet-500 hover:bg-violet-600 text-white" :disabled="isPenangguhan && totalDays > 6">
                         <svg class="fill-current shrink-0 mr-2" width="16" height="16" viewBox="0 0 16 16">
                             <path d="M14.3 2.3L5 11.6 1.7 8.3c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l4 4c.2.2.4.3.7.3.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0Z" />
                         </svg>
-                        Ajukan Cuti
+                        <span x-text="isPenangguhan ? 'Ajukan Penangguhan' : 'Ajukan Cuti'"></span>
                     </button>
                 </div>
             </div>
@@ -175,12 +192,33 @@
 </div>
 
 <script>
-function leaveRequestForm() {
+function leaveRequestForm(leaveTypesData) {
     return {
+        leaveTypes: leaveTypesData,
+        leaveTypeId: '{{ old('leave_type_id') }}',
+        isCutiTahunan: false,
+        isPenangguhan: {{ old('is_penangguhan', 'false') }},
         startDate: '{{ old('start_date') }}',
         endDate: '{{ old('end_date') }}',
         totalDays: 0,
         
+        init() {
+            if (this.leaveTypeId) {
+                this.checkLeaveType();
+            }
+            this.calculateDays();
+        },
+        
+        checkLeaveType() {
+            const selectedType = this.leaveTypes.find(t => t.id == this.leaveTypeId);
+            if (selectedType && selectedType.name.toLowerCase() === 'cuti tahunan') {
+                this.isCutiTahunan = true;
+            } else {
+                this.isCutiTahunan = false;
+                this.isPenangguhan = false;
+            }
+        },
+
         calculateDays() {
             if (this.startDate && this.endDate) {
                 const start = new Date(this.startDate);

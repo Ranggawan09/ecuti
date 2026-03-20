@@ -83,6 +83,41 @@ class ApprovalController extends Controller
                 'status' => 'disetujui'
             ]);
 
+            // Deduct leave balance
+            $daysToDeduct = (int) $leaveRequest->total_days;
+            $balances = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
+                ->where(function($q) {
+                    $q->where('remaining_days', '>', 0)
+                      ->orWhere('carried_over_days', '>', 0);
+                })
+                ->orderBy('year', 'asc')
+                ->get();
+            
+            foreach ($balances as $balance) {
+                if ($daysToDeduct <= 0) break;
+
+                if ($balance->carried_over_days > 0) {
+                    $deduct = min($balance->carried_over_days, $daysToDeduct);
+                    $balance->carried_over_days -= $deduct;
+                    $balance->used_days += $deduct;
+                    $daysToDeduct -= $deduct;
+                }
+
+                if ($daysToDeduct <= 0) {
+                    $balance->save();
+                    break;
+                }
+
+                if ($balance->remaining_days > 0) {
+                    $deduct = min($balance->remaining_days, $daysToDeduct);
+                    $balance->remaining_days -= $deduct;
+                    $balance->used_days += $deduct;
+                    $daysToDeduct -= $deduct;
+                }
+                
+                $balance->save();
+            }
+
             DB::commit();
 
             // ========== NOTIFIKASI WHATSAPP ==========
@@ -182,6 +217,23 @@ class ApprovalController extends Controller
             $leaveRequest->update([
                 'status' => $newStatus
             ]);
+
+            // Apply penangguhan logic if Atasan Tidak Langsung approves the postponement
+            if ($newStatus === 'ditangguhkan' && $leaveRequest->is_penangguhan) {
+                $year = \Carbon\Carbon::parse($leaveRequest->start_date)->year;
+                $leaveBalance = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
+                    ->where('year', $year)
+                    ->first();
+                
+                if ($leaveBalance) {
+                    $daysToCarry = min(6, (int) $leaveRequest->total_days);
+                    // Deduct from remaining days of current year
+                    $leaveBalance->remaining_days -= $daysToCarry;
+                    // Add to carried_over_days in the SAME year, so it is retained but separate
+                    $leaveBalance->carried_over_days += $daysToCarry;
+                    $leaveBalance->save();
+                }
+            }
 
             DB::commit();
 

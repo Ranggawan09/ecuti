@@ -92,12 +92,15 @@ class LeaveRequestController extends Controller
                 ->with('warning', 'Profil Anda belum lengkap. Silakan lengkapi data berikut terlebih dahulu: ' . implode(', ', $missingFields));
         }
 
+        $currentYearEnd = now()->endOfYear()->format('Y-m-d');
+
         $validated = $request->validate([
             'leave_type_id' => 'required|exists:leave_types,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'start_date' => "required|date|after:today|before_or_equal:$currentYearEnd",
+            'end_date' => "required|date|after_or_equal:start_date|before_or_equal:$currentYearEnd",
             'reason' => 'required|string',
             'address_during_leave' => 'required|string',
+            'is_penangguhan' => 'nullable|boolean',
         ]);
 
         // Calculate total days
@@ -105,7 +108,32 @@ class LeaveRequestController extends Controller
         $endDate = new \DateTime($validated['end_date']);
         $totalDays = $startDate->diff($endDate)->days + 1;
 
-        // Create leave request with auto-set employee_id and status
+        // Validate against available leave balance (only if leave type deducts balance)
+        $leaveType = \App\Models\LeaveType::find($validated['leave_type_id']);
+        if ($leaveType && $leaveType->deduct_balance) {
+            $currentYear = now()->year;
+            $oldestYear  = $currentYear - 2; // n-2
+
+            // Sum available days from oldest year onwards (carried_over_days + remaining_days per year)
+            $balances = \App\Models\LeaveBalance::where('employee_id', $employee->id)
+                ->where('year', '>=', $oldestYear)
+                ->orderBy('year', 'asc')
+                ->get();
+
+            $totalAvailable = $balances->sum(function ($b) {
+                return max(0, $b->carried_over_days) + max(0, $b->remaining_days);
+            });
+
+            if ($totalDays > $totalAvailable) {
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'total_days' => "Jumlah hari cuti yang diajukan ({$totalDays} hari) melebihi sisa cuti Anda yang tersedia ({$totalAvailable} hari).",
+                    ]);
+            }
+        }
+
+
         $leaveRequest = LeaveRequest::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $validated['leave_type_id'],
@@ -114,6 +142,7 @@ class LeaveRequestController extends Controller
             'total_days' => $totalDays,
             'reason' => $validated['reason'],
             'address_during_leave' => $validated['address_during_leave'],
+            'is_penangguhan' => $validated['is_penangguhan'] ?? false,
             'status' => 'menunggu_atasan_langsung',
         ]);
 
@@ -180,10 +209,12 @@ class LeaveRequestController extends Controller
         $isAjax = $request->ajax() || $request->wantsJson();
 
         try {
+            $currentYearEnd = now()->endOfYear()->format('Y-m-d');
+
             $validated = $request->validate([
                 'leave_type_id' => 'required|exists:leave_types,id',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
+                'start_date' => "required|date|after:today|before_or_equal:$currentYearEnd",
+                'end_date' => "required|date|after_or_equal:start_date|before_or_equal:$currentYearEnd",
                 'reason' => 'required|string',
                 'address_during_leave' => 'required|string',
             ]);

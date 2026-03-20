@@ -11,7 +11,8 @@
             'end_date' => $lr->end_date->format('d/m/Y'),
             'date_range' => $lr->start_date->format('d/m/Y') . ' - ' . $lr->end_date->format('d/m/Y'),
             'total_days' => $lr->total_days,
-            'status' => $lr->status
+            'status' => $lr->status,
+            'is_penangguhan' => $lr->is_penangguhan
         ];
     });
 @endphp
@@ -225,7 +226,10 @@
                                     <div class="text-gray-600 dark:text-gray-300" x-text="leave.employee_nip"></div>
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.jenis_cuti">
-                                    <div class="text-gray-600 dark:text-gray-300" x-text="leave.leave_type"></div>
+                                    <div class="text-gray-600 dark:text-gray-300">
+                                        <span x-text="leave.leave_type"></span>
+                                        <span x-show="leave.is_penangguhan" class="ml-2 inline-flex font-medium rounded-full text-center px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500">Penangguhan</span>
+                                    </div>
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.tanggal">
                                     <div class="text-gray-600 dark:text-gray-300" x-text="leave.date_range"></div>
@@ -258,7 +262,7 @@
                                         </button>
                                         <button 
                                             x-show="leave.status === 'menunggu_atasan_langsung'"
-                                            @click="showApprovalModal(leave.id, leave.employee_name)" 
+                                            @click="showApprovalModal(leave.id, leave.employee_name, leave.is_penangguhan)" 
                                             class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" 
                                             title="Proses">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
@@ -362,8 +366,11 @@
                 <input type="hidden" id="cuti_id">
                 
                 <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                    <p class="text-sm text-blue-800 dark:text-blue-200 mb-1">
                         <strong>Pegawai:</strong> <span id="nama_pegawai"></span>
+                    </p>
+                    <p id="penangguhan_banner" class="text-sm text-yellow-700 dark:text-yellow-400 font-medium" style="display: none;">
+                        ⚠️ Ini adalah permohonan Penangguhan Cuti.
                     </p>
                 </div>
 
@@ -523,9 +530,10 @@ function leaveRequestsTable() {
             document.getElementById('detailModal').classList.add('hidden');
         },
         
-        showApprovalModal(leaveId, employeeName) {
+        showApprovalModal(leaveId, employeeName, isPenangguhan) {
             document.getElementById('cuti_id').value = leaveId;
             document.getElementById('nama_pegawai').textContent = employeeName;
+            document.getElementById('penangguhan_banner').style.display = isPenangguhan ? 'block' : 'none';
             document.getElementById('approvalModal').classList.remove('hidden');
             
             // Reset form

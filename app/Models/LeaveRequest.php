@@ -19,6 +19,7 @@ class LeaveRequest extends Model
         'reason',
         'address_during_leave',
         'status',
+        'is_penangguhan',
         'printed_at',
         'no_urut',
         'nomor_surat',

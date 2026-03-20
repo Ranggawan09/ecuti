@@ -88,6 +88,43 @@ class ApprovalController extends Controller
                 'status' => $hasAtasanTidakLangsung ? 'menunggu_atasan_tidak_langsung' : 'disetujui'
             ]);
 
+            // Deduct leave balance if fully approved
+            if (!$hasAtasanTidakLangsung) {
+                $daysToDeduct = (int) $leaveRequest->total_days;
+                $balances = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
+                    ->where(function($q) {
+                        $q->where('remaining_days', '>', 0)
+                          ->orWhere('carried_over_days', '>', 0);
+                    })
+                    ->orderBy('year', 'asc')
+                    ->get();
+                
+                foreach ($balances as $balance) {
+                    if ($daysToDeduct <= 0) break;
+
+                    if ($balance->carried_over_days > 0) {
+                        $deduct = min($balance->carried_over_days, $daysToDeduct);
+                        $balance->carried_over_days -= $deduct;
+                        $balance->used_days += $deduct;
+                        $daysToDeduct -= $deduct;
+                    }
+
+                    if ($daysToDeduct <= 0) {
+                        $balance->save();
+                        break;
+                    }
+
+                    if ($balance->remaining_days > 0) {
+                        $deduct = min($balance->remaining_days, $daysToDeduct);
+                        $balance->remaining_days -= $deduct;
+                        $balance->used_days += $deduct;
+                        $daysToDeduct -= $deduct;
+                    }
+                    
+                    $balance->save();
+                }
+            }
+
             DB::commit();
 
             // ========== NOTIFIKASI WHATSAPP ==========
@@ -198,9 +235,35 @@ class ApprovalController extends Controller
             );
 
             // Update status leave request
-            $leaveRequest->update([
-                'status' => $newStatus
-            ]);
+            $hasAtasanTidakLangsung = $leaveRequest->employee->atasan_tidak_langsung_id != null;
+            
+            if ($newStatus === 'ditangguhkan' && $leaveRequest->is_penangguhan) {
+                $finalStatus = $hasAtasanTidakLangsung ? 'menunggu_atasan_tidak_langsung' : 'ditangguhkan';
+                $leaveRequest->update([
+                    'status' => $finalStatus
+                ]);
+
+                // Apply penangguhan logic if fully approved (no atasan tidak langsung)
+                if ($finalStatus === 'ditangguhkan') {
+                    $year = \Carbon\Carbon::parse($leaveRequest->start_date)->year;
+                    $leaveBalance = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
+                        ->where('year', $year)
+                        ->first();
+                    
+                    if ($leaveBalance) {
+                        $daysToCarry = min(6, (int) $leaveRequest->total_days);
+                        // Deduct from remaining days of current year
+                        $leaveBalance->remaining_days -= $daysToCarry;
+                        // Add to carried_over_days in the same year
+                        $leaveBalance->carried_over_days += $daysToCarry;
+                        $leaveBalance->save();
+                    }
+                }
+            } else {
+                $leaveRequest->update([
+                    'status' => $newStatus
+                ]);
+            }
 
             DB::commit();
 

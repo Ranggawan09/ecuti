@@ -79,6 +79,8 @@
                             value="{{ old('start_date', $leaveRequest->start_date->format('Y-m-d')) }}"
                             x-model="startDate"
                             @change="calculateDays()"
+                            min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                            max="{{ \Carbon\Carbon::now()->endOfYear()->format('Y-m-d') }}"
                             required
                         >
                         @error('start_date')
@@ -98,6 +100,8 @@
                             value="{{ old('end_date', $leaveRequest->end_date->format('Y-m-d')) }}"
                             x-model="endDate"
                             @change="calculateDays()"
+                            min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
+                            max="{{ \Carbon\Carbon::now()->endOfYear()->format('Y-m-d') }}"
                             required
                         >
                         @error('end_date')
