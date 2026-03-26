@@ -2,7 +2,7 @@
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
 
     @php
-        $currentYear = (int) date('Y');
+        $currentYear = (int) now()->year;
         $yearsToFetch = [$currentYear, $currentYear - 1, $currentYear - 2];
         $employee = auth()->user()->employee;
         $leaveBalances = $employee

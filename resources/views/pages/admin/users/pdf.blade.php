@@ -77,7 +77,7 @@
 <body>
     <div class="header">
         <h1>Data User Sistem Cuti</h1>
-        <p>Dicetak pada: {{ date('d F Y, H:i') }}</p>
+        <p>Dicetak pada: {{ now()->format('d F Y, H:i') }}</p>
     </div>
 
     <table>

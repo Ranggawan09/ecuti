@@ -10,11 +10,15 @@ class LeaveBalanceSeeder extends Seeder
 {
     public function run(): void
     {
+        // Mocking year 2027 for testing leave balance feature
+        \Carbon\Carbon::setTestNow('2027-01-01');
+
         $employees = Employee::all();
         $yearData = [
             2024 => 6,
             2025 => 6,
             2026 => 12,
+            2027 => 12,
         ];
 
         foreach ($employees as $employee) {
