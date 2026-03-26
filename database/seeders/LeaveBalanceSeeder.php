@@ -18,22 +18,21 @@ class LeaveBalanceSeeder extends Seeder
             2024 => 6,
             2025 => 6,
             2026 => 12,
-            2027 => 12,
         ];
 
         foreach ($employees as $employee) {
             foreach ($yearData as $year => $totalDays) {
                 LeaveBalance::updateOrCreate(
-                    [
-                        'employee_id' => $employee->id,
-                        'year' => $year,
-                    ],
-                    [
-                        'total_days' => $totalDays,
-                        'used_days' => 0,
-                        'remaining_days' => $totalDays,
-                        'carried_over_days' => 0,
-                    ]
+                [
+                    'employee_id' => $employee->id,
+                    'year' => $year,
+                ],
+                [
+                    'total_days' => $totalDays,
+                    'used_days' => 0,
+                    'remaining_days' => $totalDays,
+                    'carried_over_days' => 0,
+                ]
                 );
             }
         }

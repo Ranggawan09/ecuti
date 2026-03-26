@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Generate kuota cuti setiap pergantian tahun (1 Januari jam 00:00)
+        $schedule->command('leave:generate-annual')->yearlyOn(1, 1, '00:00');
     }
 
     /**

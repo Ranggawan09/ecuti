@@ -120,7 +120,6 @@
                                 <th class="p-3 text-center">Ditangguhkan</th>
                                 <th class="p-3 text-center">Terpakai</th>
                                 <th class="p-3 text-center">Sisa</th>
-                                <th class="p-3 text-center">Progress</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -143,19 +142,10 @@
                                 <td class="p-3 text-center">
                                     <span class="inline-flex font-bold text-emerald-600 dark:text-emerald-400">{{ $bal->remaining_days }}</span>
                                 </td>
-                                <td class="p-3">
-                                    <div class="flex items-center gap-2">
-                                        <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                            <div class="h-2 rounded-full {{ $usedPct > 80 ? 'bg-red-400' : ($usedPct > 50 ? 'bg-amber-400' : 'bg-emerald-400') }}"
-                                                 style="width: {{ $usedPct }}%"></div>
-                                        </div>
-                                        <span class="text-xs text-gray-400 w-8">{{ $usedPct }}%</span>
-                                    </div>
-                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="p-6 text-center text-gray-400 dark:text-gray-500">
+                                <td colspan="5" class="p-6 text-center text-gray-400 dark:text-gray-500">
                                     <svg class="w-10 h-10 mx-auto mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                     Data sisa cuti belum tersedia.
                                 </td>
