@@ -7,35 +7,31 @@
     <style>
         @page {
             size: A4;
-            margin: 0.6cm 0.9cm 0.5cm 0.9cm;
+            margin: 0.7cm 1.0cm 0.6cm 1.0cm;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 8pt;
-            line-height: 1.25;
+            font-size: 8.5pt;
+            line-height: 1.3;
             color: #000;
             background: white;
         }
         .wrap {
             width: 100%;
-            max-width: 19.2cm;
+            max-width: 19cm;
             margin: 0 auto;
         }
 
-        /* Header */
-        .hdr-se {
+        /* Header kanan */
+        .hdr-right {
             text-align: right;
-            font-size: 6.8pt;
-            line-height: 1.35;
-            margin-bottom: 4px;
-        }
-        .hdr-addr {
-            text-align: right;
-            font-size: 8pt;
+            font-size: 8.5pt;
             line-height: 1.55;
             margin-bottom: 4px;
         }
+
+        /* Judul tengah */
         .judul {
             text-align: center;
             margin-bottom: 3px;
@@ -44,6 +40,7 @@
             font-size: 9.5pt;
             font-weight: bold;
             text-transform: uppercase;
+            text-decoration: underline;
         }
         .judul .nomor {
             font-size: 8.5pt;
@@ -58,20 +55,21 @@
         }
         td, th {
             border: 1px solid #000;
-            padding: 1px 4px;
-            font-size: 7.8pt;
+            padding: 1.5px 4px;
+            font-size: 8pt;
             vertical-align: top;
             text-align: left;
         }
-        .h {
-            font-weight: bold;
-        }
+        .bold { font-weight: bold; }
+        .center { text-align: center; }
+        .right  { text-align: right; }
+        .noborder { border: none !important; }
 
-        /* Footer */
+        /* Footer catatan */
         .kaki {
             font-size: 6.5pt;
             margin-top: 2px;
-            line-height: 1.4;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -82,32 +80,49 @@
     $empUser    = optional($emp)->user;
 
     /* Atasan Langsung = User model */
-    $aL         = optional($emp)->atasanLangsung;
-    $aLEmp      = optional($aL)->employee;
+    $aL         = optional($emp)->atasanLangsung;       // User
+    $aLEmp      = optional($aL)->employee;              // Employee
 
     /* Atasan Tidak Langsung = User model */
-    $aTL        = optional($emp)->atasanTidakLangsung;
-    $aTLEmp     = optional($aTL)->employee;
+    $aTL        = optional($emp)->atasanTidakLangsung;  // User
+    $aTLEmp     = optional($aTL)->employee;             // Employee
 
     /* Approval status */
     $appL       = $leaveRequest->approvalAtasanLangsung;
-    $stL        = optional($appL)->status;  // disetujui / ditolak / ditangguhkan
+    $stL        = optional($appL)->status;  // disetujui / tidak_disetujui / ditangguhkan / perubahan
 
     $stFinal    = $leaveRequest->status;
 
     /* Masa kerja */
-    $masaTahun  = optional($emp)->masa_kerja_tahun ?? '-';
+    $masaKerja  = optional($emp)->masa_kerja;
+    $masaTahun  = $masaKerja->tahun ?? 0;
+    $masaBulan  = $masaKerja->bulan ?? 0;
+    $masaKerjaStr = $masaTahun . ' Tahun ' . $masaBulan . ' Bulan';
+
+    /* Golongan */
+    $golongan   = optional($emp)->golongan ?? '-';
 
     /* Alamat & telepon */
     $address    = $leaveRequest->address_during_leave ?? '-';
-    $phone      = optional($empUser)->phone ?? '-';
+    $phone      = optional($empUser)->whatsapp ?? optional($empUser)->phone ?? '-';
 
-    /* Leave balances */
-    $cy         = \Carbon\Carbon::now()->year;
-    $balances   = optional($emp)->leaveBalances ?? collect();
-    $balN2      = $balances->where('year', $cy-2)->first();
-    $balN1      = $balances->where('year', $cy-1)->first();
-    $balN       = $balances->where('year', $cy)->first();
+    /* Leave balances — 3 tahun terakhir */
+    $cy       = \Carbon\Carbon::now()->year;
+    $balances = optional($emp)->leaveBalances ?? collect();
+    $balN2    = $balances->where('year', $cy - 2)->first();
+    $balN1    = $balances->where('year', $cy - 1)->first();
+    $balN     = $balances->where('year', $cy)->first();
+
+    /* Helper: keterangan saldo */
+    $keteranganBal = function($bal) use ($leaveRequest) {
+        if (!$bal) return '-';
+        $diambil = $bal->used_days ?? 0;
+        $sisa    = $bal->remaining_days ?? 0;
+        if ($diambil > 0) {
+            return 'Diambil ' . $diambil . ' Hari Sisa ' . $sisa . ' Hari';
+        }
+        return 'Sisa ' . $sisa . ' Hari';
+    };
 
     /* Terbilang */
     $tb = [
@@ -123,38 +138,38 @@
     $days    = (int)$leaveRequest->total_days;
     $dayText = $tb[$days] ?? $days;
 
-    /* Bulan Romawi */
-    $rm   = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
-    $bmn  = (int)\Carbon\Carbon::parse($leaveRequest->created_at)->format('n');
-    $rBln = $rm[$bmn - 1];
+    /* Bulan romawi */
+    $rm      = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+    $bmnCrt  = (int)\Carbon\Carbon::parse($leaveRequest->created_at)->format('n');
+    $rBln    = $rm[$bmnCrt - 1];
 
-    /* Tanggal format */
+    /* Tanggal */
     $tglSurat   = \Carbon\Carbon::parse($leaveRequest->created_at)->locale('id')->isoFormat('D MMMM YYYY');
     $tglMulai   = \Carbon\Carbon::parse($leaveRequest->start_date)->locale('id')->isoFormat('D MMMM YYYY');
     $tglSelesai = \Carbon\Carbon::parse($leaveRequest->end_date)->locale('id')->isoFormat('D MMMM YYYY');
     $tahunSurat = \Carbon\Carbon::parse($leaveRequest->created_at)->format('Y');
 
+    /* Nomor surat dari DB; fallback ke auto-generate */
+    $nomorSurat = $leaveRequest->nomor_surat
+        ?? ($leaveRequest->no_urut . '/KPN.W14.U5/KP5.3/' . $rBln . '/' . $tahunSurat);
+
     /* Nama jenis cuti */
     $namaJenisCuti = optional($leaveRequest->leaveType)->name ?? '';
+
+    /* Unit kerja kota (ambil kata terakhir unit_kerja sebagai kota) */
+    $unitKerja  = optional($emp)->unit_kerja ?? 'Jombang';
+    // Kota surat: gunakan field terpisah jika ada, fallback ke unit kerja
+    $kotaSurat  = optional($empUser)->kota ?? 'Jombang';
 @endphp
 
 {{-- ============================================================ --}}
-{{-- HEADER: SURAT EDARAN (rata kanan)                           --}}
+{{-- HEADER: Tanggal + Kepada (rata kanan)                       --}}
 {{-- ============================================================ --}}
-<div class="hdr-se">
-    SURAT EDARAN SEKRETARIS &nbsp;MAHKAMAH AGUNG &nbsp;REPUBLIK INDONESIA<br>
-    NOMOR 13 TAHUN 2019<br>
-    TENTANG TATA CARA PEMBERIAN CUTI PEGAWAI NEGERI SIPIL
-</div>
-
-{{-- ============================================================ --}}
-{{-- TANGGAL + KEPADA (rata kanan)                               --}}
-{{-- ============================================================ --}}
-<div class="hdr-addr">
-    {{ optional($emp)->unit_kerja_kota ?? 'Madiun' }},&nbsp;&nbsp;{{ $tglSurat }}<br>
+<div class="hdr-right">
+    {{ $kotaSurat }},&nbsp;&nbsp;{{ $tglSurat }}<br>
     Kepada<br>
-    Yth. Bapak Ketua Pengadilan Negeri Kota Madiun<br>
-    di &nbsp;Madiun
+    Yth. Ketua Pengadilan Negeri {{ $kotaSurat }}<br>
+    di &nbsp;– &nbsp;<span style="letter-spacing:2px">{{ strtoupper($kotaSurat) }}</span>
 </div>
 
 {{-- ============================================================ --}}
@@ -162,7 +177,7 @@
 {{-- ============================================================ --}}
 <div class="judul">
     <h2>Formulir Permintaan Dan Pemberian Cuti</h2>
-    <div class="nomor">NOMOR :&nbsp;&nbsp;&nbsp;/KPN.W14.U5/ KP5.3/ {{ $rBln }} /{{ $tahunSurat }}</div>
+    <div class="nomor">Nomor :&nbsp;{{ $nomorSurat }}</div>
 </div>
 
 {{-- ============================================================ --}}
@@ -170,25 +185,25 @@
 {{-- ============================================================ --}}
 <table>
     <tr>
-        <td colspan="4" class="h">I.&nbsp;&nbsp;&nbsp;DATA &nbsp;PEGAWAI</td>
+        <td colspan="4" class="bold">I.&nbsp;&nbsp;Data Pegawai :</td>
     </tr>
     <tr>
         <td style="width:12%">Nama</td>
-        <td style="width:38%">{{ optional($empUser)->nama ?? '-' }}</td>
-        <td style="width:10%">NIP</td>
+        <td style="width:38%" class="bold">{{ optional($empUser)->nama ?? '-' }}</td>
+        <td style="width:10%">NIP.</td>
         <td>{{ optional($empUser)->nip ?? '-' }}</td>
     </tr>
     <tr>
         <td>Jabatan</td>
         <td>{{ optional($emp)->jabatan ?? '-' }}</td>
-        <td>Gol. Ruano</td>
-        <td>{{ optional($emp)->golongan ?? '-' }}</td>
+        <td>Gol. Ruang :</td>
+        <td>{{ $golongan }}</td>
     </tr>
     <tr>
         <td>Unit Kerja</td>
-        <td>{{ optional($emp)->unit_kerja ?? '-' }}</td>
-        <td>Masa Kerja</td>
-        <td>{{ $masaTahun }}&nbsp; Tahun</td>
+        <td>{{ $unitKerja }}</td>
+        <td>Masa Kerja :</td>
+        <td>{{ $masaKerjaStr }}</td>
     </tr>
 </table>
 
@@ -197,25 +212,25 @@
 {{-- ============================================================ --}}
 <table>
     <tr>
-        <td colspan="4" class="h">II.&nbsp;&nbsp;JENIS CUTI YANG DIAMBIL**</td>
+        <td colspan="4" class="bold">II.&nbsp;&nbsp;Jenis cuti yang di ambil :</td>
     </tr>
     <tr>
-        <td style="width:36%">1. Cuti Tahunan</td>
-        <td style="width:14%; text-align:center">{{ $namaJenisCuti=='Cuti Tahunan' ? '✓' : '' }}</td>
-        <td style="width:36%">2. Cuti Besar</td>
-        <td style="text-align:center">{{ $namaJenisCuti=='Cuti Besar' ? '✓' : '' }}</td>
+        <td style="width:38%">1.Cuti Tahunan</td>
+        <td style="width:12%; text-align:center">{{ $namaJenisCuti=='Cuti Tahunan' ? '√' : '' }}</td>
+        <td style="width:38%">2.Cuti Besar.</td>
+        <td style="text-align:center">{{ $namaJenisCuti=='Cuti Besar' ? '√' : '' }}</td>
     </tr>
     <tr>
-        <td>3. Cuti Sakit</td>
-        <td style="text-align:center">{{ $namaJenisCuti=='Cuti Sakit' ? '✓' : '' }}</td>
-        <td>4. Cuti Melahirkan</td>
-        <td style="text-align:center">{{ $namaJenisCuti=='Cuti Melahirkan' ? '✓' : '' }}</td>
+        <td>3.Cuti Sakit.</td>
+        <td style="text-align:center">{{ $namaJenisCuti=='Cuti Sakit' ? '√' : '' }}</td>
+        <td>4.Cuti Melahirkan.</td>
+        <td style="text-align:center">{{ $namaJenisCuti=='Cuti Melahirkan' ? '√' : '' }}</td>
     </tr>
     <tr>
-        <td>5. Cuti Karena Alasan Penting</td>
-        <td style="text-align:center">{{ $namaJenisCuti=='Cuti Karena Alasan Penting' ? '✓' : '' }}</td>
-        <td>6. Cuti di Luar Tanggungan<br>&nbsp;&nbsp;&nbsp;Negara</td>
-        <td style="text-align:center">{{ $namaJenisCuti=='Cuti di Luar Tanggungan Negara' ? '✓' : '' }}</td>
+        <td>5.Cuti karena alasan Penting.</td>
+        <td style="text-align:center">{{ in_array($namaJenisCuti,['Cuti Karena Alasan Penting','Cuti karena alasan Penting']) ? '√' : '' }}</td>
+        <td>6.Cuti di Luar Tanggungan Negara.</td>
+        <td style="text-align:center">{{ in_array($namaJenisCuti,['Cuti di Luar Tanggungan Negara','Cuti Diluar Tanggungan Negara']) ? '√' : '' }}</td>
     </tr>
 </table>
 
@@ -224,10 +239,10 @@
 {{-- ============================================================ --}}
 <table>
     <tr>
-        <td class="h">III.&nbsp;&nbsp;ALASAN CUTI</td>
+        <td class="bold">III.&nbsp;&nbsp;Alasan Cuti :</td>
     </tr>
     <tr>
-        <td style="height:16px">{{ $leaveRequest->reason ?? '-' }}</td>
+        <td style="height:18px">{{ $leaveRequest->reason ?? '-' }}</td>
     </tr>
 </table>
 
@@ -236,112 +251,86 @@
 {{-- ============================================================ --}}
 <table>
     <tr>
-        <td colspan="6" class="h">IV.&nbsp;&nbsp;&nbsp;LAMANYA CUTI</td>
+        <td colspan="4" class="bold">IV.&nbsp;&nbsp;Lamanya Cuti</td>
     </tr>
     <tr>
-        <td style="width:9%">Selama</td>
-        <td style="width:22%">{{ $days }}  ({{ $dayText }} ) hari</td>
-        <td style="width:13%">mulai tanggal</td>
-        <td style="width:23%; text-align:center">{{ $tglMulai }}</td>
-        <td style="width:5%; text-align:center">s/d</td>
-        <td style="text-align:center">{{ $tglSelesai }}</td>
+        <td style="width:9%">Selama :</td>
+        <td style="width:15%">{{ $days }} hari</td>
+        <td style="width:22%; text-align:center">(Hari/Bulan/Tahun)</td>
+        <td style="text-align:center">{{ $tglMulai }} ↑</td>
     </tr>
 </table>
 
 {{-- ============================================================ --}}
 {{-- V. CATATAN CUTI                                             --}}
-{{--                                                              --}}
-{{-- 5 kolom:                                                    --}}
-{{-- Col1(Tahun) | Col2(Sisa) | Col3(Keterangan) | Col4(Paraf) | Col5(Jenis cuti 2-6) --}}
-{{-- Row header cuti tahunan: colspan=3 | Paraf | 2.CUTI BESAR  --}}
-{{-- Row sub-header:  Tahun | Sisa | Keterangan | (kosong) | 3.CUTI SAKIT --}}
-{{-- Row N-2:   ... | 4.CUTI MELAHIRKAN                         --}}
-{{-- Row N-1:   ... | 5.CUTI KARENA ALASAN PENTING              --}}
-{{-- Row N:     ... | 6.CUTI DI LUAR TANGGUNGAN NEGARA          --}}
 {{-- ============================================================ --}}
 <table>
-    {{-- Baris 1: Judul V --}}
+    {{-- Judul --}}
     <tr>
-        <td colspan="5" class="h">V.&nbsp;&nbsp;&nbsp;CATATAN CUTI***</td>
+        <td colspan="5" class="bold">V.&nbsp;&nbsp;Catatan Cuti :</td>
     </tr>
-    {{-- Baris 2: Subtitle --}}
+    {{-- Header kolom --}}
     <tr>
-        <td colspan="5" style="font-size:7.5pt">
-            1.&nbsp;&nbsp;Cuti Tahunan Tahun &nbsp;{{ $cy - 3 }}
-        </td>
+        <td colspan="3" class="bold" style="width:40%; text-align:center">1.Cuti Tahunan</td>
+        <td style="width:12%"></td>
+        <td class="bold">2.Cuti Besar</td>
     </tr>
-    {{-- Baris 3: Header kolom --}}
     <tr>
-        <td colspan="3" class="h" style="font-size:7.5pt; width:38%">1. CUTI TAHUNAN</td>
-        <td class="h" style="font-size:7pt; text-align:center; width:12%; vertical-align:middle">
-            Paraf<br>Petugas Cuti
-        </td>
-        <td class="h" style="font-size:7.5pt">2. CUTI BESAR</td>
+        <td class="bold" style="width:14%">Tahun</td>
+        <td class="bold" style="width:8%; text-align:center">Sisa</td>
+        <td class="bold" style="width:18%">Keterangan</td>
+        <td style="width:12%"></td>
+        <td>3.Cuti Sakit</td>
     </tr>
-    {{-- Baris 4: Sub-header kolom --}}
+    {{-- N-2 --}}
     <tr>
-        <td class="h" style="font-size:7.5pt; width:14%">Tahun</td>
-        <td class="h" style="font-size:7.5pt; width:10%">Sisa</td>
-        <td class="h" style="font-size:7.5pt; width:14%">Keterangan</td>
-        <td style="font-size:7.5pt; width:12%"></td>
-        <td style="font-size:7.5pt">3. CUTI SAKIT</td>
+        <td>{{ $cy - 2 }}</td>
+        <td style="text-align:center">{{ optional($balN2)->remaining_days ?? '-' }}</td>
+        <td style="font-size:7pt">{{ $keteranganBal($balN2) }}</td>
+        <td></td>
+        <td>4.Cuti Melahirkan</td>
     </tr>
-    {{-- Baris 5: N-2 --}}
+    {{-- N-1 --}}
     <tr>
-        <td style="font-size:7.5pt">N-2.&nbsp;{{ $cy - 2 }}</td>
-        <td style="font-size:7.5pt; text-align:center">{{ optional($balN2)->remaining_days ?? '0' }}</td>
-        <td style="font-size:7.5pt; text-align:center">{{ optional($balN2)->used_days ?? '0' }}</td>
-        <td style="font-size:7.5pt"></td>
-        <td style="font-size:7.5pt">4. CUTI MELAHIRKAN</td>
+        <td>{{ $cy - 1 }}</td>
+        <td style="text-align:center">{{ optional($balN1)->remaining_days ?? '-' }}</td>
+        <td style="font-size:7pt">{{ $keteranganBal($balN1) }}</td>
+        <td></td>
+        <td>5.Cuti karena alasan penting</td>
     </tr>
-    {{-- Baris 6: N-1 --}}
+    {{-- N (tahun ini) --}}
     <tr>
-        <td style="font-size:7.5pt">N-1.&nbsp;{{ $cy - 1 }}</td>
-        <td style="font-size:7.5pt; text-align:center">{{ optional($balN1)->remaining_days ?? '' }}</td>
-        <td style="font-size:7.5pt; text-align:center">{{ optional($balN1)->used_days ?? '' }}</td>
-        <td style="font-size:7.5pt"></td>
-        <td style="font-size:7.5pt">5. CUTI KARENA ALASAN PENTING</td>
-    </tr>
-    {{-- Baris 7: N (tahun ini) --}}
-    <tr>
-        <td style="font-size:7.5pt">N.&nbsp;&nbsp;{{ $cy }}</td>
-        <td style="font-size:7.5pt; text-align:center">{{ optional($balN)->remaining_days ?? '' }}</td>
-        <td style="font-size:7.5pt; text-align:center">{{ optional($balN)->used_days ?? '' }}</td>
-        <td style="font-size:7.5pt"></td>
-        <td style="font-size:7.5pt">6. CUTI DI LUAR TANGGUNGAN<br>&nbsp;&nbsp;&nbsp;NEGARA</td>
+        <td>{{ $cy }}</td>
+        <td style="text-align:center">{{ optional($balN)->remaining_days ?? '-' }}</td>
+        <td style="font-size:7pt">{{ $keteranganBal($balN) }}</td>
+        <td></td>
+        <td>6.Cuti diluar tanggungan negara</td>
     </tr>
 </table>
 
 {{-- ============================================================ --}}
-{{-- VI. ALAMAT SELAMA MENJALANKAN CUTI                          --}}
-{{--                                                              --}}
-{{-- Layout:                                                      --}}
-{{-- | Header (colspan=2)                              |          --}}
-{{-- | Baris atas: (kosong) | TELP | nomor             |          --}}
-{{-- | Baris bawah: alamat (kiri lebar) | Hormat Saya+sign+nama  --}}
+{{-- VI. ALAMAT SELAMA MENJALANKAN CUTI + TANDA TANGAN PEGAWAI  --}}
 {{-- ============================================================ --}}
 <table>
     <tr>
-        <td colspan="3" class="h">VI.&nbsp;&nbsp;ALAMAT SELAMA MENJALANKAN CUTI</td>
+        <td colspan="3" class="bold">VI.&nbsp;&nbsp;Alamat selama menjalankan Cuti :</td>
     </tr>
     <tr>
-        {{-- Kiri: kosong di atas, alamat di bawah --}}
-        <td style="width:55%; height:80px; vertical-align:top; padding:3px 6px">
+        <td style="width:45%; height:85px; vertical-align:top; padding:3px 6px">
             {{ $address }}
         </td>
-        {{-- Kanan: TELP + Hormat Saya --}}
-        <td style="width:13%; vertical-align:top; padding:2px 4px; font-size:7.8pt">
-            TELP
+        <td style="width:12%; vertical-align:top; padding:2px 6px">
+            Telephone:
         </td>
-        <td style="width:32%; vertical-align:top; padding:2px 4px; font-size:7.8pt">
+        <td style="width:43%; vertical-align:top; padding:2px 6px">
             {{ $phone }}<br>
-            Hormat Saya,<br><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hormat saya ,<br>
             @if(optional($emp)->signature_path)
                 <img src="{{ asset('storage/' . $emp->signature_path) }}"
-                     style="max-height:36px; max-width:100px; display:block; margin:2px 0"
+                     style="max-height:38px; max-width:100px; display:block; margin:2px 4px"
                      alt="TTD">
             @else
-                <div style="height:36px"></div>
+                <div style="height:38px"></div>
             @endif
             <strong>{{ optional($empUser)->nama ?? '-' }}</strong><br>
             NIP. {{ optional($empUser)->nip ?? '-' }}
@@ -351,31 +340,35 @@
 
 {{-- ============================================================ --}}
 {{-- VII. PERTIMBANGAN ATASAN LANGSUNG                           --}}
-{{--                                                              --}}
-{{-- Baris 1: header                                             --}}
-{{-- Baris 2: DISETUJUI | PERUBAHAN | DITANGGUHKAN | TDK DISETUJUI --}}
-{{-- Baris 3: area kosong + tanda tangan (kanan)                 --}}
 {{-- ============================================================ --}}
 <table>
     <tr>
-        <td colspan="4" class="h">VII.&nbsp;&nbsp;PERTIMBANGAN ATASAN LANGSUNG**</td>
+        <td colspan="4" class="bold">VII.&nbsp;Pertimbangan Atasan Langsung :</td>
     </tr>
     <tr>
-        <td style="width:25%">DISETUJUI{{ $stL=='disetujui' ? '  ✓' : '' }}</td>
-        <td style="width:25%">PERUBAHAN****</td>
-        <td style="width:25%">DITANGGUHKAN****{{ $stL=='ditangguhkan' ? '  ✓' : '' }}</td>
-        <td style="width:25%">TIDAK DISETUJUI****{{ $stL=='ditolak' ? '  ✓' : '' }}</td>
+        <td style="width:25%">
+            Disetujui{{ $stL=='disetujui' ? ' ✓' : '' }}
+        </td>
+        <td style="width:25%">
+            Perubahan{{ $stL=='perubahan' ? ' ✓' : '' }}
+        </td>
+        <td style="width:25%">
+            Ditangguhkan{{ $stL=='ditangguhkan' ? ' ✓' : '' }}
+        </td>
+        <td style="width:25%">
+            Tidak disetujui{{ $stL=='tidak_disetujui' ? ' ✓' : '' }}
+        </td>
     </tr>
     <tr>
-        <td colspan="4" style="height:80px; padding:4px 8px; vertical-align:bottom">
+        <td colspan="4" style="height:85px; vertical-align:bottom; padding:4px 8px">
             <div style="text-align:right">
-                KETUA<br><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Panitera ,<br>
                 @if(optional($aLEmp)->signature_path)
                     <img src="{{ asset('storage/' . $aLEmp->signature_path) }}"
-                         style="max-height:36px; max-width:120px; display:block; margin-left:auto; margin-bottom:2px"
+                         style="max-height:38px; max-width:120px; display:block; margin-left:auto; margin-bottom:2px"
                          alt="TTD">
                 @else
-                    <div style="height:36px"></div>
+                    <div style="height:38px"></div>
                 @endif
                 <strong>{{ optional($aL)->nama ?? '' }}</strong><br>
                 NIP. {{ optional($aL)->nip ?? '' }}
@@ -389,24 +382,32 @@
 {{-- ============================================================ --}}
 <table>
     <tr>
-        <td colspan="4" class="h">VIII.&nbsp;&nbsp;KEPUTUSAN PEJABAT &nbsp;YANG BERWENANG MEMBERIKAN CUTI**</td>
+        <td colspan="4" class="bold">VIII.&nbsp;Keputusan Pejabat yang &nbsp;memberikan Cuti:</td>
     </tr>
     <tr>
-        <td style="width:25%">DISETUJUI{{ $stFinal=='disetujui' ? '  ✓' : '' }}</td>
-        <td style="width:25%">PERUBAHAN****</td>
-        <td style="width:25%">DITANGGUHKAN**{{ $stFinal=='ditangguhkan' ? '  ✓' : '' }}</td>
-        <td style="width:25%">TIDAK DISETUJUI****{{ $stFinal=='ditolak' ? '  ✓' : '' }}</td>
+        <td style="width:25%">
+            Disetujui{{ $stFinal=='disetujui' ? ' ✓' : '' }}
+        </td>
+        <td style="width:25%">
+            Perubahan{{ $stFinal=='perubahan' ? ' ✓' : '' }}
+        </td>
+        <td style="width:25%">
+            Ditangguhkan{{ $stFinal=='ditangguhkan' ? ' ✓' : '' }}
+        </td>
+        <td style="width:25%">
+            Tidak Disetujui{{ $stFinal=='tidak_disetujui' ? ' ✓' : '' }}
+        </td>
     </tr>
     <tr>
-        <td colspan="4" style="height:80px; padding:4px 8px; vertical-align:bottom">
+        <td colspan="4" style="height:85px; vertical-align:bottom; padding:4px 8px">
             <div style="text-align:right">
-                KETUA<br><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ketua ,<br>
                 @if(optional($aTLEmp)->signature_path)
                     <img src="{{ asset('storage/' . $aTLEmp->signature_path) }}"
-                         style="max-height:36px; max-width:120px; display:block; margin-left:auto; margin-bottom:2px"
+                         style="max-height:38px; max-width:120px; display:block; margin-left:auto; margin-bottom:2px"
                          alt="TTD">
                 @else
-                    <div style="height:36px"></div>
+                    <div style="height:38px"></div>
                 @endif
                 <strong>{{ optional($aTL)->nama ?? '' }}</strong><br>
                 NIP. {{ optional($aTL)->nip ?? '' }}
@@ -419,10 +420,11 @@
 {{-- CATATAN KAKI                                                --}}
 {{-- ============================================================ --}}
 <div class="kaki">
-    *&nbsp;Coret yang tidak perlu &nbsp;&nbsp;
-    **&nbsp;Pilih salah satu &nbsp;&nbsp;
-    ***&nbsp;Diisi oleh pejabat bidang kepegawaian sebelum PNS mengajukan cuti &nbsp;&nbsp;
-    ****&nbsp;Diberi tanda centang oleh atasannya
+    Catatan<br>
+    1.Coret yang tidak perlu<br>
+    2. Pilih salah satu dengan memberi tanda (O)<br>
+    3. diisi oleh pejabat yang menangani bidang kepegawaian sebelum PNS mengajukan cuti<br>
+    4. Diberi tanda centang dan alasannya
 </div>
 
 </div>

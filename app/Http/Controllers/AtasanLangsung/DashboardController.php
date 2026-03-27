@@ -12,22 +12,48 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Ambil employee_id dari users yang atasan langsungnya adalah user yang login
-        $employeeIds = Employee::where('atasan_langsung_id', Auth::id())
-            ->pluck('id');
+        // Ambil semua pegawai yang atasan langsungnya adalah user yang login
+        $employees = Employee::with('user')
+            ->where('atasan_langsung_id', Auth::id())
+            ->get();
 
+        $employeeIds = $employees->pluck('id');
+
+        // Statistik pengajuan cuti bawahan
         $stats = [
-            'menunggu' => LeaveRequest::whereIn('employee_id', $employeeIds)
-            ->where('status', 'menunggu_atasan_langsung')
-            ->count(),
-            'disetujui' => LeaveRequest::whereIn('employee_id', $employeeIds)
-            ->where('status', 'disetujui')
-            ->count(),
+            'menunggu'       => LeaveRequest::whereIn('employee_id', $employeeIds)
+                ->where('status', 'menunggu_atasan_langsung')
+                ->count(),
+            'disetujui'      => LeaveRequest::whereIn('employee_id', $employeeIds)
+                ->where('status', 'disetujui')
+                ->count(),
             'tidak_disetujui' => LeaveRequest::whereIn('employee_id', $employeeIds)
-            ->where('status', 'tidak_disetujui')
-            ->count(),
+                ->where('status', 'tidak_disetujui')
+                ->count(),
+            'total_pegawai'  => $employees->count(),
         ];
 
-        return view('pages.atasan_langsung.dashboard', compact('stats'));
+        // Pengajuan terbaru yang menunggu persetujuan (5 teratas)
+        $pendingRequests = LeaveRequest::with(['employee.user', 'leaveType'])
+            ->whereIn('employee_id', $employeeIds)
+            ->where('status', 'menunggu_atasan_langsung')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Riwayat pengajuan terbaru dari semua bawahan (5 teratas)
+        $recentRequests = LeaveRequest::with(['employee.user', 'leaveType'])
+            ->whereIn('employee_id', $employeeIds)
+            ->whereNotIn('status', ['menunggu_atasan_langsung'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('pages.atasan_langsung.dashboard', compact(
+            'stats',
+            'employees',
+            'pendingRequests',
+            'recentRequests'
+        ));
     }
 }

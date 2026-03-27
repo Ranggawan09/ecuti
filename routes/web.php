@@ -122,7 +122,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->as('atasan-tidak-langsung.')
         ->group(function () {
 
-            Route::get('/dashboard', fn() => view('pages.atasan_tidak_langsung.dashboard'))
+            Route::get('/dashboard', [\App\Http\Controllers\AtasanTidakLangsung\DashboardController::class, 'index'])
                 ->name('dashboard');
 
             // Approval Routes
