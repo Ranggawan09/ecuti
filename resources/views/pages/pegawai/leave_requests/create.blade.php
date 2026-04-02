@@ -70,7 +70,7 @@
                                 <span class="text-gray-500 dark:text-gray-400 text-xs">Centang opsi ini HANYA jika Anda ingin menangguhkan (menyimpan) sisa cuti tahun ini hingga maksimal 6 hari untuk dipakai di tahun depan. Pengajuan Anda tidak akan dianggap sebagai cuti libur.</span>
                             </span>
                         </label>
-                        <p x-show="isPenangguhan && totalDays > 6" class="text-sm text-red-500 mt-2 font-medium">⚠️ Maksimal penangguhan cuti adalah 6 hari.</p>
+                        <p x-show="isPenangguhan && totalDays > 6" class="text-sm text-red-500 mt-2 font-medium">Maksimal penangguhan cuti adalah 6 hari.</p>
                     </div>
                 </div>
 
@@ -129,7 +129,7 @@
                     </div>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total hari akan dihitung otomatis berdasarkan tanggal mulai dan selesai</p>
                     @error('total_days')
-                        <p class="text-sm text-red-500 mt-1 font-medium">⚠️ {{ $message }}</p>
+                        <p class="text-sm text-red-500 mt-1 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 

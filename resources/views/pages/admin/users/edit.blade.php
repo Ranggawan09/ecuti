@@ -9,7 +9,7 @@
             </svg>
             <span>Kembali ke Daftar User</span>
         </a>
-        <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Edit User ✨</h1>
+        <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Edit User</h1>
     </div>
 
     <!-- Form -->

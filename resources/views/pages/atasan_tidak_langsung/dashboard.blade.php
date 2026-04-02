@@ -5,7 +5,7 @@
     <div class="sm:flex sm:justify-between sm:items-center mb-8">
         <div class="mb-4 sm:mb-0">
             <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Dashboard Atasan Tidak Langsung</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Selamat datang, <strong>{{ auth()->user()->nama ?? '-' }}</strong> 👋</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Selamat datang, <strong>{{ auth()->user()->nama ?? '-' }}</strong></p>
         </div>
         <div>
             <a href="{{ route('atasan-tidak-langsung.approvals.index') }}"

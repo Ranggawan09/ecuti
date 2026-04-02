@@ -25,7 +25,7 @@
 
         <!-- Left: Title -->
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Cuti Pegawai ✨</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Cuti Pegawai</h1>
         </div>
 
         <!-- Right: Actions -->
@@ -370,7 +370,7 @@
                         <strong>Pegawai:</strong> <span id="nama_pegawai"></span>
                     </p>
                     <p id="penangguhan_banner" class="text-sm text-yellow-700 dark:text-yellow-400 font-medium" style="display: none;">
-                        ⚠️ Ini adalah permohonan Penangguhan Cuti.
+                        Ini adalah permohonan Penangguhan Cuti.
                     </p>
                 </div>
 

@@ -42,7 +42,7 @@
                             <div class="text-left font-medium text-green-500">$2,890.66</div>
                         </td>
                         <td class="p-2 whitespace-nowrap">
-                            <div class="text-lg text-center">🇺🇸</div>
+                            <div class="text-sm text-center text-gray-600 dark:text-gray-400">US</div>
                         </td>
                     </tr>
                     <tr>
@@ -61,7 +61,7 @@
                             <div class="text-left font-medium text-green-500">$2,767.04</div>
                         </td>
                         <td class="p-2 whitespace-nowrap">
-                            <div class="text-lg text-center">🇩🇪</div>
+                            <div class="text-sm text-center text-gray-600 dark:text-gray-400">DE</div>
                         </td>
                     </tr>
                     <tr>
@@ -80,7 +80,7 @@
                             <div class="text-left font-medium text-green-500">$1,220.66</div>
                         </td>
                         <td class="p-2 whitespace-nowrap">
-                            <div class="text-lg text-center">🇫🇷</div>
+                            <div class="text-sm text-center text-gray-600 dark:text-gray-400">FR</div>
                         </td>
                     </tr>
                     <tr>
@@ -99,7 +99,7 @@
                             <div class="text-left font-medium text-green-500">$1,890.66</div>
                         </td>
                         <td class="p-2 whitespace-nowrap">
-                            <div class="text-lg text-center">🇬🇧</div>
+                            <div class="text-sm text-center text-gray-600 dark:text-gray-400">GB</div>
                         </td>
                     </tr>
                     <tr>
@@ -118,7 +118,7 @@
                             <div class="text-left font-medium text-green-500">$2,890.66</div>
                         </td>
                         <td class="p-2 whitespace-nowrap">
-                            <div class="text-lg text-center">🇺🇸</div>
+                            <div class="text-sm text-center text-gray-600 dark:text-gray-400">US</div>
                         </td>
                     </tr>                                                                                
                 </tbody>

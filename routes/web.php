@@ -162,7 +162,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->as('admin.')
         ->group(function () {
 
-            Route::get('/dashboard', fn() => view('pages.admin.dashboard.dashboard'))
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])
                 ->name('dashboard');
 
             // export harus di atas resource, kalau di bawah akan ditangkap sebagai show({id} = 'export')

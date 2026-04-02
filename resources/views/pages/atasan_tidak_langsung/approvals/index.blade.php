@@ -25,7 +25,7 @@
 
         <!-- Left: Title -->
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Cuti Pegawai (Atasan Tidak Langsung) ✨</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Cuti Pegawai (Atasan Tidak Langsung)</h1>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Menampilkan data cuti yang telah disetujui oleh atasan langsung</p>
         </div>
 
@@ -371,7 +371,7 @@
                         <strong>Pegawai:</strong> <span id="nama_pegawai"></span>
                     </p>
                     <p id="penangguhan_banner" class="text-sm text-yellow-700 dark:text-yellow-400 font-medium" style="display: none;">
-                        ⚠️ Ini adalah permohonan Penangguhan Cuti.
+                        Ini adalah permohonan Penangguhan Cuti.
                     </p>
                 </div>
 

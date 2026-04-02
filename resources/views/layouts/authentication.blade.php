@@ -41,7 +41,7 @@
         <div class="flex flex-col items-center w-full">
 
             <div class="max-w-sm w-full px-4 py-8">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="mx-auto w-14 h-18">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="mx-auto block max-h-24 w-auto object-contain mb-4">
                 {{ $slot }}
             </div>
         </div>
