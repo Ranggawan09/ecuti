@@ -180,10 +180,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
                 \App\Http\Controllers\Admin\UserController::class
             );
 
-            Route::resource('employees',
-                \App\Http\Controllers\Admin\EmployeeController::class
-            );
-
             // Logs
             Route::get('activity-logs',
                 [\App\Http\Controllers\Admin\ActivityLogController::class, 'index']

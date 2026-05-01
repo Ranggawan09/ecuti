@@ -131,7 +131,7 @@
         <div class="lg:col-span-2 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
             <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
                 <h2 class="font-semibold text-gray-800 dark:text-gray-100">Daftar Pegawai</h2>
-                <a href="{{ route('admin.employees.index') }}" class="text-xs bg-indigo-100 dark:bg-indigo-500/30 text-indigo-600 dark:text-indigo-400 rounded-full px-2 py-1 hover:bg-indigo-200 dark:hover:bg-indigo-500/50 transition-colors">
+                <a href="{{ route('admin.users.index') }}" class="text-xs bg-indigo-100 dark:bg-indigo-500/30 text-indigo-600 dark:text-indigo-400 rounded-full px-2 py-1 hover:bg-indigo-200 dark:hover:bg-indigo-500/50 transition-colors">
                     {{ $stats['total_pegawai'] }} pegawai →
                 </a>
             </header>
