@@ -228,7 +228,6 @@
             <!-- Signature File Input -->
             <input type="file" class="hidden" wire:model="signature" x-ref="signature" accept=".png,image/png" x-on:change="
                 signatureName = $refs.signature.files[0].name;
-                hasSignature = true;
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     signaturePreview = e.target.result;
@@ -242,23 +241,40 @@
             </x-label>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Format PNG, maksimal 1MB</p>
 
-            <!-- Current Signature / Empty State -->
-            <div class="mt-2" x-show="!signaturePreview">
-                @if ($this->user->signature_path)
-                    <img src="{{ $this->user->signature_url }}" alt="Tanda Tangan" class="h-24 object-contain bg-white border border-gray-200 dark:border-gray-700 rounded p-2">
-                @else
-                    <div class="h-24 w-48 bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-400 rounded flex flex-col items-center justify-center gap-1">
-                        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+            <!-- Signature Preview & Loading Area -->
+            <div class="mt-2">
+                <!-- Signature Upload Loading -->
+                <div wire:loading wire:target="signature">
+                    <div class="h-24 w-48 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded flex flex-col items-center justify-center gap-2">
+                        <svg class="animate-spin h-8 w-8 text-violet-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <span class="text-xs text-red-500 font-medium">Belum ada tanda tangan</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Mengunggah...</span>
                     </div>
-                @endif
-            </div>
+                </div>
 
-            <!-- New Signature Preview -->
-            <div class="mt-2" x-show="signaturePreview" style="display: none;">
-                <img :src="signaturePreview" alt="Preview Tanda Tangan" class="h-24 object-contain bg-white border border-gray-200 dark:border-gray-700 rounded p-2">
+                <!-- Previews (Hidden while loading) -->
+                <div wire:loading.remove wire:target="signature">
+                    <!-- Current Signature / Empty State -->
+                    <div x-show="!signaturePreview">
+                        @if ($this->user->signature_path)
+                            <img src="{{ $this->user->signature_url }}" alt="Tanda Tangan" class="h-24 object-contain bg-white border border-gray-200 dark:border-gray-700 rounded p-2">
+                        @else
+                            <div class="h-24 w-48 bg-red-50 dark:bg-red-900/20 border-2 border-dashed border-red-400 rounded flex flex-col items-center justify-center gap-1">
+                                <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                </svg>
+                                <span class="text-xs text-red-500 font-medium">Belum ada tanda tangan</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- New Signature Preview -->
+                    <div x-show="signaturePreview" style="display: none;">
+                        <img :src="signaturePreview" alt="Preview Tanda Tangan" class="h-24 object-contain bg-white border border-gray-200 dark:border-gray-700 rounded p-2">
+                    </div>
+                </div>
             </div>
 
             <x-secondary-button class="mt-2 me-2" type="button" x-on:click.prevent="$refs.signature.click()">
@@ -287,7 +303,7 @@
             {{ __('Saved.') }}
         </x-action-message>
 
-        <x-button wire:loading.attr="disabled" wire:target="photo,signature">
+        <x-button wire:loading.attr="disabled">
             {{ __('Save') }}
         </x-button>
     </x-slot>

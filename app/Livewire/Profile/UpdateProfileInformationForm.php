@@ -16,18 +16,7 @@ class UpdateProfileInformationForm extends Component
 
     protected $listeners = ['refresh' => '$refresh'];
 
-    protected $rules = [
-        'state.nama' => 'required|string|max:255',
-        'state.nip' => 'required|string|max:255',
-        'state.email' => 'required|email|max:255',
-        'state.whatsapp' => 'nullable|string|max:20',
-        'state.jabatan' => 'nullable|string|max:255',
-        'state.golongan' => 'nullable|string|max:50',
-        'state.unit_kerja' => 'nullable|string|max:255',
-        'state.masa_kerja_tahun' => 'nullable|integer|min:0',
-        'state.masa_kerja_bulan' => 'nullable|integer|min:0|max:11',
-        'signature' => 'nullable|image|mimes:png|max:1024',
-    ];
+    // Validation is handled by the Fortify action UpdateUserProfileInformation
 
     public function mount()
     {
@@ -90,13 +79,19 @@ class UpdateProfileInformationForm extends Component
                 $input
             );
 
-            if (isset($this->photo) || isset($this->signature)) {
+            $hasFiles = isset($this->photo) || isset($this->signature);
+            
+            // Clear temporary file properties
+            $this->photo = null;
+            $this->signature = null;
+
+            if ($hasFiles) {
                 return redirect()->route('profile.show');
             }
 
             // Reload fresh data from database
             $user->refresh();
-            $user->load('employee'); // Tambahkan ini untuk reload employee relationship
+            $user->load('employee');
             
             // Reload state with fresh data
             $this->mount();
@@ -104,10 +99,32 @@ class UpdateProfileInformationForm extends Component
             $this->dispatch('saved');
             $this->dispatch('refresh-navigation-menu');
             
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Profile update error: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
-            $this->addError('general', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage());
+            
+            // Debug information
+            $debugMsg = '';
+            if ($this->photo) {
+                $path = $this->photo->getRealPath();
+                $exists = $path ? (file_exists($path) ? 'Yes' : 'No') : 'N/A';
+                $debugMsg .= " Photo[Path:$path, Exists:$exists]";
+            }
+            if ($this->signature) {
+                $path = $this->signature->getRealPath();
+                $exists = $path ? (file_exists($path) ? 'Yes' : 'No') : 'N/A';
+                $debugMsg .= " Sig[Path:$path, Exists:$exists]";
+            }
+
+            if (str_contains($e->getMessage(), 'file_size') || str_contains($e->getMessage(), 'is not readable')) {
+                $this->addError('general', 'Error sistem file: ' . $e->getMessage() . $debugMsg);
+                $this->photo = null;
+                $this->signature = null;
+            } else {
+                $this->addError('general', 'Terjadi kesalahan: ' . $e->getMessage() . $debugMsg);
+            }
         }
     }
 

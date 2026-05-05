@@ -40,6 +40,10 @@ class ApprovalController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        if (request()->ajax()) {
+            return view('pages.atasan_tidak_langsung.approvals._show_partial', compact('leaveRequest'));
+        }
+
         return view('pages.atasan_tidak_langsung.approvals.show', compact('leaveRequest'));
     }
 

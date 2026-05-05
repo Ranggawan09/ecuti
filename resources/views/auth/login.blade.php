@@ -1,5 +1,8 @@
 <x-authentication-layout>
-    <h1 class="text-3xl text-gray-800 dark:text-gray-100 font-bold mb-6 text-center">{{ __('eCuti') }}</h1>
+    <h1 class="text-3xl text-gray-800 dark:text-gray-100 font-bold mb-2 text-center">{{ __('eCuti') }}</h1>
+    <div class="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
+        Sistem ini hanya untuk ASN (PNS dan P3K) di Pengadilan Negeri Jombang.
+    </div>
     @if (session('status'))
     <div class="mb-4 font-medium text-sm text-green-600">
         {{ session('status') }}

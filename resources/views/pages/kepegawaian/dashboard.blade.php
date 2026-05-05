@@ -19,7 +19,7 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
 
         <!-- Total Pengajuan -->
         <div class="col-span-2 lg:col-span-1 bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl p-5 text-white shadow-sm">
@@ -83,6 +83,42 @@
             </div>
             <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $stats['tidak_disetujui'] }}</div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total ditolak</div>
+        </div>
+
+        <!-- Persentase Disetujui -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/60">
+            <div class="flex items-center justify-between mb-3">
+                <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Tingkat Persetujuan</div>
+                <div class="w-8 h-8 bg-indigo-100 dark:bg-indigo-500/20 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $approvalRate }}%</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total disetujui</div>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Monthly Chart -->
+        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl p-5 border border-gray-100 dark:border-gray-700/60">
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                <svg class="w-4 h-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Jumlah Cuti Per Bulan ({{ now()->year }})
+            </h2>
+            <div class="h-[250px]">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+        <!-- Yearly Chart -->
+        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl p-5 border border-gray-100 dark:border-gray-700/60">
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                <svg class="w-4 h-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+                Jumlah Cuti 3 Tahun Terakhir
+            </h2>
+            <div class="h-[250px]">
+                <canvas id="yearlyChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -285,6 +321,71 @@
             }
         }
     });
+})();
+
+// Monthly & Yearly Charts
+(function() {
+    const monthlyData = @json($monthlyData);
+    const yearlyData  = @json($yearlyData);
+    const yearlyLabels = @json($yearlyLabels);
+
+    const mCtx = document.getElementById('monthlyChart');
+    if (mCtx) {
+        new Chart(mCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                datasets: [{
+                    label: 'Jumlah Cuti',
+                    data: monthlyData,
+                    backgroundColor: '#14b8a6',
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    const yCtx = document.getElementById('yearlyChart');
+    if (yCtx) {
+        new Chart(yCtx, {
+            type: 'line',
+            data: {
+                labels: yearlyLabels,
+                datasets: [{
+                    label: 'Jumlah Cuti',
+                    data: yearlyData,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: '#8b5cf620',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#8b5cf6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
 })();
 
 // Letter number save

@@ -423,7 +423,10 @@ function initEditForm(leaveId) {
         fetch(`/pegawai/leave-requests/${leaveId}`, {
             method: 'POST',
             body: data,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
         })
         .then(r => r.json())
         .then(res => {
