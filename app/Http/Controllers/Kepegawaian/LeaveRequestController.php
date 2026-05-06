@@ -21,7 +21,7 @@ class LeaveRequestController extends Controller
     {
         $leaveRequests = LeaveRequest::with(['employee.user', 'leaveType'])
             ->whereNull('printed_at')
-            ->latest()
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         return view('pages.kepegawaian.leave_requests.index', compact('leaveRequests'));

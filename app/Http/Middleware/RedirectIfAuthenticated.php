@@ -21,17 +21,17 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                $role = Auth::user()->role;
+                $user = Auth::user();
                 
-                if ($role === 'admin') {
+                if ($user->isRole('admin')) {
                     return redirect()->route('admin.dashboard');
-                } elseif ($role === 'pegawai') {
+                } elseif ($user->isRole('pegawai')) {
                     return redirect()->route('pegawai.dashboard');
-                } elseif ($role === 'atasan_langsung') {
+                } elseif ($user->isRole('atasan_langsung')) {
                     return redirect()->route('atasan-langsung.dashboard');
-                } elseif ($role === 'atasan_tidak_langsung') {
+                } elseif ($user->isRole('atasan_tidak_langsung')) {
                     return redirect()->route('atasan-tidak-langsung.dashboard');
-                } elseif ($role === 'kepegawaian') {
+                } elseif ($user->isRole('kepegawaian')) {
                     return redirect()->route('kepegawaian.dashboard');
                 }
 

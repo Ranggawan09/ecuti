@@ -43,12 +43,18 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'whatsapp' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
-            'role' => ['required', Rule::in(['admin', 'kepegawaian', 'atasan_langsung', 'atasan_tidak_langsung', 'pegawai'])],
-            'atasan_langsung_id' => 'required_if:role,pegawai|nullable|exists:users,id',
-            'atasan_tidak_langsung_id' => 'required_if:role,pegawai|nullable|exists:users,id',
+            'roles' => 'required|array|min:1',
+            'roles.*' => ['required', Rule::in(['admin', 'kepegawaian', 'atasan_langsung', 'atasan_tidak_langsung', 'pegawai'])],
+            'atasan_langsung_id' => 'required_if:roles.*,pegawai|nullable|exists:users,id',
+            'atasan_tidak_langsung_id' => 'required_if:roles.*,pegawai|nullable|exists:users,id',
+        ], [
+            'roles.required' => 'Minimal satu role harus dipilih.',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+
+        // default role legacy behavior, pick first one
+        $primaryRole = $validated['roles'][0];
 
         $user = User::create([
             'nama' => $validated['nama'],
@@ -56,11 +62,12 @@ class UserController extends Controller
             'email' => $validated['email'],
             'whatsapp' => $validated['whatsapp'],
             'password' => $validated['password'],
-            'role' => $validated['role'],
+            'role' => $primaryRole,
+            'roles' => $validated['roles'],
         ]);
 
-        // Create employee record if role is pegawai
-        if ($validated['role'] === 'pegawai') {
+        // Create employee record if role includes pegawai
+        if (in_array('pegawai', $validated['roles'])) {
             $tmt = null;
             if ($request->filled('masa_kerja_tahun') || $request->filled('masa_kerja_bulan')) {
                 $tahun = $request->input('masa_kerja_tahun', 0);
@@ -109,9 +116,12 @@ class UserController extends Controller
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'whatsapp' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => ['required', Rule::in(['admin', 'kepegawaian', 'atasan_langsung', 'atasan_tidak_langsung', 'pegawai'])],
-            'atasan_langsung_id' => 'required_if:role,pegawai|nullable|exists:users,id',
-            'atasan_tidak_langsung_id' => 'required_if:role,pegawai|nullable|exists:users,id',
+            'roles' => 'required|array|min:1',
+            'roles.*' => ['required', Rule::in(['admin', 'kepegawaian', 'atasan_langsung', 'atasan_tidak_langsung', 'pegawai'])],
+            'atasan_langsung_id' => 'required_if:roles.*,pegawai|nullable|exists:users,id',
+            'atasan_tidak_langsung_id' => 'required_if:roles.*,pegawai|nullable|exists:users,id',
+        ], [
+            'roles.required' => 'Minimal satu role harus dipilih.',
         ]);
 
         if (!empty($validated['password'])) {
@@ -120,17 +130,20 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
+        $primaryRole = $validated['roles'][0];
+
         $user->update([
             'nama' => $validated['nama'],
             'nip' => $validated['nip'],
             'email' => $validated['email'],
             'whatsapp' => $validated['whatsapp'],
             'password' => $validated['password'] ?? $user->password,
-            'role' => $validated['role'],
+            'role' => $primaryRole,
+            'roles' => $validated['roles'],
         ]);
 
         // Handle employee record based on role
-        if ($validated['role'] === 'pegawai') {
+        if (in_array('pegawai', $validated['roles'])) {
             $tmt = null;
             if ($request->filled('masa_kerja_tahun') || $request->filled('masa_kerja_bulan')) {
                 $tahun = $request->input('masa_kerja_tahun', 0);

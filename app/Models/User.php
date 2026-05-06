@@ -18,6 +18,7 @@ class User extends Authenticatable
         'whatsapp',
         'password',
         'role',
+        'roles',
         'profile_photo_path',
     ];
 
@@ -28,6 +29,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'roles' => 'array',
     ];
 
     /* ================== RELATIONS ================== */
@@ -51,7 +53,15 @@ class User extends Authenticatable
 
     public function isRole(string $role): bool
     {
+        if (!empty($this->roles)) {
+            return in_array($role, $this->roles);
+        }
         return $this->role === $role;
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->isRole($role);
     }
 
     /**

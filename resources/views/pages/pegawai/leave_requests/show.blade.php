@@ -132,7 +132,7 @@
                 <!-- Approval History -->
                 @if($leaveRequest->approvals->count() > 0)
                 <div class="md:col-span-2">
-                    <h3 class="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase mb-3">Riwayat Persetujuan</h3>
+                    <h3 class="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase mb-3"></h3>
                     <div class="space-y-3">
                         @foreach($leaveRequest->approvals as $approval)
                         <div class="flex items-start gap-3 bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg">

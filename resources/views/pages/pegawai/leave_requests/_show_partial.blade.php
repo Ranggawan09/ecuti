@@ -88,14 +88,31 @@
     <div>
         <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Riwayat Persetujuan</h4>
         <div class="space-y-2">
-            @foreach($leaveRequest->approvals as $approval)
+            @php
+                $sortedApprovals = $leaveRequest->approvals->sortBy(function($approval) {
+                    return match($approval->level) {
+                        'atasan_langsung' => 1,
+                        'atasan_tidak_langsung' => 2,
+                        default => 3
+                    };
+                });
+            @endphp
+            @foreach($sortedApprovals as $approval)
             <div class="flex items-start gap-3 bg-gray-50 dark:bg-gray-900/20 p-3 rounded-lg">
                 <div class="w-8 h-8 shrink-0 flex items-center justify-center bg-violet-100 dark:bg-violet-500/30 rounded-full text-sm font-medium text-violet-600 dark:text-violet-400">
                     {{ substr($approval->approver->nama ?? '-', 0, 1) }}
                 </div>
                 <div class="flex-1">
                     <div class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ $approval->approver->nama ?? '-' }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ $approval->approver->role ?? '-' }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                        @if($approval->level === 'atasan_langsung')
+                            Atasan Langsung
+                        @elseif($approval->level === 'atasan_tidak_langsung')
+                            Atasan Tidak Langsung
+                        @else
+                            {{ $approval->approver->role ?? '-' }}
+                        @endif
+                    </div>
                     @if($approval->note)
                     <div class="mt-1 text-xs text-gray-600 dark:text-gray-400"><strong>Catatan:</strong> {{ $approval->note }}</div>
                     @endif

@@ -7,6 +7,16 @@ use App\Http\Controllers\Pegawai\PengajuanCutiController;
 /* |-------------------------------------------------------------------------- | AUTH |-------------------------------------------------------------------------- */
 Route::redirect('/', 'login');
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        if ($user->isRole('admin')) return redirect()->route('admin.dashboard');
+        if ($user->isRole('pegawai')) return redirect()->route('pegawai.dashboard');
+        if ($user->isRole('atasan_langsung')) return redirect()->route('atasan-langsung.dashboard');
+        if ($user->isRole('atasan_tidak_langsung')) return redirect()->route('atasan-tidak-langsung.dashboard');
+        if ($user->isRole('kepegawaian')) return redirect()->route('kepegawaian.dashboard');
+        return redirect('/');
+    })->name('dashboard');
+
     /*     |--------------------------------------------------------------------------     | KEPEGAWAIAN (HR)     |--------------------------------------------------------------------------     */    Route::middleware(['auth', 'role:kepegawaian'])
         ->prefix('kepegawaian')
         ->as('kepegawaian.')

@@ -9,18 +9,16 @@ class LeaveRequestPolicy
 {
     public function view(User $user, LeaveRequest $leaveRequest): bool
     {
-        if ($user->role === 'pegawai') {
+        if ($user->isRole('pegawai')) {
             $employeeUserId = $leaveRequest->employee?->user_id
                 ?? $leaveRequest->load('employee')->employee?->user_id;
 
             return $employeeUserId === $user->id;
         }
 
-        return in_array($user->role, [
-            'atasan_langsung',
-            'atasan_tidak_langsung',
-            'kepegawaian',
-        ]);
+        return $user->isRole('atasan_langsung') || 
+               $user->isRole('atasan_tidak_langsung') || 
+               $user->isRole('kepegawaian');
     }
 
     public function approve(User $user, LeaveRequest $leaveRequest): bool

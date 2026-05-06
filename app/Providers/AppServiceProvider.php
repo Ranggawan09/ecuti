@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Mocking year 2027 for testing leave balance feature
-        \Illuminate\Support\Carbon::setTestNow('2027-01-01');
+        //\Illuminate\Support\Carbon::setTestNow('2027-01-01');
 
         View::composer('*', function ($view) {
             $pendingCount = LeaveRequest::where('status', 'draft')->count();

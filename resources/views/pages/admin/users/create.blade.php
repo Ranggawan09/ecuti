@@ -91,25 +91,34 @@
                         @enderror
                     </div>
 
-                    <!-- Role -->
+                    <!-- Roles -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="role">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Role <span class="text-red-500">*</span>
                         </label>
-                        <select
-                            id="role"
-                            name="role"
-                            class="form-select w-full @error('role') border-red-300 @enderror"
-                            required
-                        >
-                            <option value="">Pilih Role</option>
-                            <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="kepegawaian" {{ old('role') == 'kepegawaian' ? 'selected' : '' }}>Kepegawaian</option>
-                            <option value="atasan_langsung" {{ old('role') == 'atasan_langsung' ? 'selected' : '' }}>Atasan Langsung</option>
-                            <option value="atasan_tidak_langsung" {{ old('role') == 'atasan_tidak_langsung' ? 'selected' : '' }}>Atasan Tidak Langsung</option>
-                            <option value="pegawai" {{ old('role') == 'pegawai' ? 'selected' : '' }}>Pegawai</option>
-                        </select>
-                        @error('role')
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="roles[]" value="admin" class="form-checkbox text-violet-500 rounded-sm" id="role_admin" {{ is_array(old('roles')) && in_array('admin', old('roles')) ? 'checked' : '' }}>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Admin</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="roles[]" value="kepegawaian" class="form-checkbox text-violet-500 rounded-sm" id="role_kepegawaian" {{ is_array(old('roles')) && in_array('kepegawaian', old('roles')) ? 'checked' : '' }}>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Kepegawaian</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="roles[]" value="atasan_langsung" class="form-checkbox text-violet-500 rounded-sm" id="role_atasan_langsung" {{ is_array(old('roles')) && in_array('atasan_langsung', old('roles')) ? 'checked' : '' }}>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Atasan Langsung</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="roles[]" value="atasan_tidak_langsung" class="form-checkbox text-violet-500 rounded-sm" id="role_atasan_tidak_langsung" {{ is_array(old('roles')) && in_array('atasan_tidak_langsung', old('roles')) ? 'checked' : '' }}>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Atasan Tidak Langsung</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="roles[]" value="pegawai" class="form-checkbox text-violet-500 rounded-sm" id="role_pegawai" {{ is_array(old('roles')) && in_array('pegawai', old('roles')) ? 'checked' : '' }}>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Pegawai</span>
+                            </label>
+                        </div>
+                        @error('roles')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -127,7 +136,7 @@
                                 class="form-select w-full @error('atasan_langsung_id') border-red-300 @enderror"
                             >
                                 <option value="">Pilih Atasan Langsung</option>
-                                @foreach(\App\Models\User::whereIn('role', ['atasan_langsung', 'atasan_tidak_langsung'])->orderBy('nama')->get() as $supervisor)
+                                @foreach(\App\Models\User::where(function($q) { $q->whereJsonContains('roles', 'atasan_langsung')->orWhere('role', 'atasan_langsung'); })->orderBy('nama')->get() as $supervisor)
                                     <option value="{{ $supervisor->id }}" {{ old('atasan_langsung_id') == $supervisor->id ? 'selected' : '' }}>
                                         {{ $supervisor->nama }} ({{ $supervisor->nip }})
                                     </option>
@@ -149,7 +158,7 @@
                                 class="form-select w-full @error('atasan_tidak_langsung_id') border-red-300 @enderror"
                             >
                                 <option value="">Pilih Atasan Tidak Langsung</option>
-                                @foreach(\App\Models\User::whereIn('role', ['atasan_langsung', 'atasan_tidak_langsung'])->orderBy('nama')->get() as $supervisor)
+                                @foreach(\App\Models\User::where(function($q) { $q->whereJsonContains('roles', 'atasan_tidak_langsung')->orWhere('role', 'atasan_tidak_langsung'); })->orderBy('nama')->get() as $supervisor)
                                     <option value="{{ $supervisor->id }}" {{ old('atasan_tidak_langsung_id') == $supervisor->id ? 'selected' : '' }}>
                                         {{ $supervisor->nama }} ({{ $supervisor->nip }})
                                     </option>
@@ -247,13 +256,13 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const roleSelect = document.getElementById('role');
+        const rolePegawai = document.getElementById('role_pegawai');
         const supervisorFields = document.getElementById('supervisorFields');
         const atasanLangsungSelect = document.getElementById('atasan_langsung_id');
         const atasanTidakLangsungSelect = document.getElementById('atasan_tidak_langsung_id');
 
         function toggleSupervisorFields() {
-            if (roleSelect.value === 'pegawai') {
+            if (rolePegawai.checked) {
                 supervisorFields.style.display = 'block';
                 atasanLangsungSelect.setAttribute('required', 'required');
                 atasanTidakLangsungSelect.setAttribute('required', 'required');
@@ -270,7 +279,7 @@
         toggleSupervisorFields();
 
         // Listen for changes
-        roleSelect.addEventListener('change', toggleSupervisorFields);
+        rolePegawai.addEventListener('change', toggleSupervisorFields);
     });
 </script>
 

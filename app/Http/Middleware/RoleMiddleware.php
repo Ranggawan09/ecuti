@@ -14,7 +14,15 @@ class RoleMiddleware
             abort(403, 'Unauthorized');
         }
 
-        if (!in_array(auth()->user()->role, $roles)) {
+        $hasAccess = false;
+        foreach ($roles as $r) {
+            if (auth()->user()->isRole($r)) {
+                $hasAccess = true;
+                break;
+            }
+        }
+
+        if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki hak akses');
         }
 

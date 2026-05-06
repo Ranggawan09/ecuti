@@ -213,15 +213,19 @@
                                     <div class="text-gray-600 dark:text-gray-300" x-text="user.whatsapp || '-'"></div>
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.role">
-                                    <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5" 
-                                         :class="{
-                                             'bg-violet-100 dark:bg-violet-500/30 text-violet-600 dark:text-violet-400': user.role === 'admin',
-                                             'bg-blue-100 dark:bg-blue-500/30 text-blue-600 dark:text-blue-400': user.role === 'kepegawaian',
-                                             'bg-amber-100 dark:bg-amber-500/30 text-amber-600 dark:text-amber-400': user.role === 'atasan_langsung',
-                                             'bg-rose-100 dark:bg-rose-500/30 text-rose-600 dark:text-rose-400': user.role === 'atasan_tidak_langsung',
-                                             'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400': user.role === 'pegawai'
-                                         }"
-                                         x-text="formatRole(user.role)">
+                                    <div class="flex flex-wrap gap-1">
+                                        <template x-for="r in (user.roles && user.roles.length ? user.roles : [user.role])" :key="r">
+                                            <div class="inline-flex font-medium rounded-full text-xs text-center px-2 py-0.5" 
+                                                :class="{
+                                                    'bg-violet-100 dark:bg-violet-500/30 text-violet-600 dark:text-violet-400': r === 'admin',
+                                                    'bg-blue-100 dark:bg-blue-500/30 text-blue-600 dark:text-blue-400': r === 'kepegawaian',
+                                                    'bg-amber-100 dark:bg-amber-500/30 text-amber-600 dark:text-amber-400': r === 'atasan_langsung',
+                                                    'bg-rose-100 dark:bg-rose-500/30 text-rose-600 dark:text-rose-400': r === 'atasan_tidak_langsung',
+                                                    'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400': r === 'pegawai'
+                                                }"
+                                                x-text="formatRole(r)">
+                                            </div>
+                                        </template>
                                     </div>
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
@@ -308,12 +312,14 @@ function usersTable() {
             }
             
             this.filteredUsers = this.allUsers.filter(user => {
+                const userRoles = user.roles && user.roles.length ? user.roles.join(' ') : user.role;
+                
                 return (
                     user.nama.toLowerCase().includes(query) ||
                     user.nip.toLowerCase().includes(query) ||
                     user.email.toLowerCase().includes(query) ||
                     (user.whatsapp && user.whatsapp.toLowerCase().includes(query)) ||
-                    user.role.toLowerCase().includes(query)
+                    userRoles.toLowerCase().includes(query)
                 );
             });
         },

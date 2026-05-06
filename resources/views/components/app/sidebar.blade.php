@@ -27,17 +27,23 @@
             </button>
             <!-- Logo -->
             @php
-                $dashboardRoute = match(auth()->user()->role) {
-                    'pegawai' => route('pegawai.dashboard'),
-                    'atasan_langsung' => route('atasan-langsung.dashboard'),
-                    'atasan_tidak_langsung' => route('atasan-tidak-langsung.dashboard'),
-                    'kepegawaian' => route('kepegawaian.dashboard'),
-                    'admin' => route('admin.dashboard'),
-                    default => '#',
-                };
+                $user = auth()->user();
+                $dashboardRoute = '#';
+                if ($user->isRole('admin')) {
+                    $dashboardRoute = route('admin.dashboard');
+                } elseif ($user->isRole('pegawai')) {
+                    $dashboardRoute = route('pegawai.dashboard');
+                } elseif ($user->isRole('atasan_langsung')) {
+                    $dashboardRoute = route('atasan-langsung.dashboard');
+                } elseif ($user->isRole('atasan_tidak_langsung')) {
+                    $dashboardRoute = route('atasan-tidak-langsung.dashboard');
+                } elseif ($user->isRole('kepegawaian')) {
+                    $dashboardRoute = route('kepegawaian.dashboard');
+                }
             @endphp
-            <a class="block" href="{{ $dashboardRoute }}">
+            <a class="flex items-center gap-3" href="{{ $dashboardRoute }}">
                 <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="w-10 h-10 object-contain">                
+                <span class="text-xl font-bold text-gray-800 dark:text-gray-100">E-CUTI</span>
             </a>
         </div>
 
@@ -45,7 +51,7 @@
         <div class="space-y-8">
             
             {{-- ================= PEGAWAI ================= --}}
-            @if(auth()->user()->role === 'pegawai')
+            @if(auth()->user()->isRole('pegawai'))
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
@@ -93,7 +99,7 @@
             @endif
 
             {{-- ================= ATASAN LANGSUNG ================= --}}
-            @if(auth()->user()->role === 'atasan_langsung')
+            @if(auth()->user()->isRole('atasan_langsung'))
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
@@ -141,7 +147,7 @@
             @endif
 
             {{-- ================= ATASAN TIDAK LANGSUNG ================= --}}
-            @if(auth()->user()->role === 'atasan_tidak_langsung')
+            @if(auth()->user()->isRole('atasan_tidak_langsung'))
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
@@ -189,7 +195,7 @@
             @endif
 
             {{-- ================= KEPEGAWAIAN ================= --}}
-            @if(auth()->user()->role === 'kepegawaian')
+            @if(auth()->user()->isRole('kepegawaian'))
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
@@ -237,7 +243,7 @@
             @endif
 
             {{-- ================= ADMIN ================= --}}
-            @if(auth()->user()->role === 'admin')
+            @if(auth()->user()->isRole('admin'))
             <!-- Menu group -->
             <div>
                 <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">

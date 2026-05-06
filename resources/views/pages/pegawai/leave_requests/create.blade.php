@@ -75,48 +75,25 @@
                 </div>
 
                 <!-- Date Range -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-2" for="start_date">
-                            Tanggal Mulai <span class="text-red-500">*</span>
-                        </label>
-                        <input 
-                            id="start_date" 
-                            name="start_date" 
-                            type="date" 
-                            class="form-input w-full @error('start_date') border-red-300 @enderror" 
-                            value="{{ old('start_date') }}"
-                            x-model="startDate"
-                            @change="calculateDays()"
-                            min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
-                            max="{{ \Carbon\Carbon::now()->endOfYear()->format('Y-m-d') }}"
-                            required
-                        >
-                        @error('start_date')
-                            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-2" for="end_date">
-                            Tanggal Selesai <span class="text-red-500">*</span>
-                        </label>
-                        <input 
-                            id="end_date" 
-                            name="end_date" 
-                            type="date" 
-                            class="form-input w-full @error('end_date') border-red-300 @enderror" 
-                            value="{{ old('end_date') }}"
-                            x-model="endDate"
-                            @change="calculateDays()"
-                            min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
-                            max="{{ \Carbon\Carbon::now()->endOfYear()->format('Y-m-d') }}"
-                            required
-                        >
-                        @error('end_date')
-                            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-2">
+                        Rentang Tanggal Cuti <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-input w-full @error('start_date') border-red-300 @enderror @error('end_date') border-red-300 @enderror" 
+                        x-ref="dateRange"
+                        placeholder="Pilih rentang tanggal cuti (Mulai - Selesai)"
+                        required
+                    >
+                    <input type="hidden" name="start_date" x-model="startDate">
+                    <input type="hidden" name="end_date" x-model="endDate">
+                    @error('start_date')
+                        <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
+                    @error('end_date')
+                        <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Total Days (Display Only) -->
@@ -207,6 +184,28 @@ function leaveRequestForm(leaveTypesData) {
                 this.checkLeaveType();
             }
             this.calculateDays();
+
+            const fp = flatpickr(this.$refs.dateRange, {
+                mode: 'range',
+                minDate: new Date(new Date().setDate(new Date().getDate() + 1)),
+                dateFormat: 'Y-m-d',
+                defaultDate: (this.startDate && this.endDate) ? [this.startDate, this.endDate] : null,
+                onChange: (selectedDates, dateStr, instance) => {
+                    if (selectedDates.length === 2) {
+                        this.startDate = instance.formatDate(selectedDates[0], 'Y-m-d');
+                        this.endDate = instance.formatDate(selectedDates[1], 'Y-m-d');
+                        this.calculateDays();
+                    } else if (selectedDates.length === 1) {
+                        this.startDate = instance.formatDate(selectedDates[0], 'Y-m-d');
+                        this.endDate = this.startDate;
+                        this.calculateDays();
+                    } else {
+                        this.startDate = '';
+                        this.endDate = '';
+                        this.totalDays = 0;
+                    }
+                }
+            });
         },
         
         checkLeaveType() {

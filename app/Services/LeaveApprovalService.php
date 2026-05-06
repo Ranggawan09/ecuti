@@ -147,7 +147,9 @@ class LeaveApprovalService
      */
     private function notifyKepegawaian(LeaveRequest $leaveRequest): void
     {
-        $kepegawaianUsers = User::where('role', 'kepegawaian')->get();
+        $kepegawaianUsers = User::where('role', 'kepegawaian')
+            ->orWhereJsonContains('roles', 'kepegawaian')
+            ->get();
 
         foreach ($kepegawaianUsers as $user) {
             Notification::create([

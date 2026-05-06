@@ -18,7 +18,7 @@ class LeaveRequestController extends Controller
             ->whereHas('employee', function ($q) {
             $q->where('user_id', auth()->id());
         })
-            ->latest()
+            ->oldest('created_at')
             ->get();
 
         // Transform data for JavaScript
