@@ -38,12 +38,17 @@ class UpdateProfileInformationForm extends Component
             $this->state['jabatan'] = $employee->jabatan ?? '';
             $this->state['golongan'] = $employee->golongan ?? '';
             $this->state['unit_kerja'] = $employee->unit_kerja ?? '';
-            $this->state['masa_kerja_tahun'] = $employee->masa_kerja_tahun ?? 0;
-            $this->state['masa_kerja_bulan'] = $employee->masa_kerja_bulan ?? 0;
+            $this->state['tmt_masa_kerja'] = $employee->tmt_masa_kerja
+                ? $employee->tmt_masa_kerja->format('Y-m-d')
+                : null;
+            // Legacy fields tetap diisi sebagai fallback
+            $this->state['masa_kerja_tahun'] = $employee->masa_kerja->tahun ?? 0;
+            $this->state['masa_kerja_bulan'] = $employee->masa_kerja->bulan ?? 0;
         } else {
             $this->state['jabatan'] = '';
             $this->state['golongan'] = '';
             $this->state['unit_kerja'] = '';
+            $this->state['tmt_masa_kerja'] = null;
             $this->state['masa_kerja_tahun'] = 0;
             $this->state['masa_kerja_bulan'] = 0;
         }

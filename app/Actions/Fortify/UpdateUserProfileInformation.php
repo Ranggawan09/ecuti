@@ -20,6 +20,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'jabatan' => ['nullable', 'string', 'max:255'],
             'golongan' => ['nullable', 'string', 'max:50'],
             'unit_kerja' => ['nullable', 'string', 'max:255'],
+            'tmt_masa_kerja' => ['nullable', 'date'],
             'masa_kerja_tahun' => ['nullable', 'integer', 'min:0'],
             'masa_kerja_bulan' => ['nullable', 'integer', 'min:0', 'max:11'],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
@@ -47,15 +48,10 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             ])->save();
 
             // Update or create employee data
+            $employeeData = $this->buildEmployeeData($input);
             $user->employee()->updateOrCreate(
                 ['user_id' => $user->id],
-                [
-                    'jabatan' => $input['jabatan'] ?? null,
-                    'golongan' => $input['golongan'] ?? null,
-                    'unit_kerja' => $input['unit_kerja'] ?? null,
-                    'masa_kerja_tahun' => $input['masa_kerja_tahun'] ?? 0,
-                    'masa_kerja_bulan' => $input['masa_kerja_bulan'] ?? 0,
-                ]
+                $employeeData
             );
         }
     }
@@ -71,17 +67,41 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         ])->save();
 
         // Update or create employee data
+        $employeeData = $this->buildEmployeeData($input);
         $user->employee()->updateOrCreate(
             ['user_id' => $user->id],
-            [
-                'jabatan' => $input['jabatan'] ?? null,
-                'golongan' => $input['golongan'] ?? null,
-                'unit_kerja' => $input['unit_kerja'] ?? null,
-                'masa_kerja_tahun' => $input['masa_kerja_tahun'] ?? 0,
-                'masa_kerja_bulan' => $input['masa_kerja_bulan'] ?? 0,
-            ]
+            $employeeData
         );
 
         $user->sendEmailVerificationNotification();
+    }
+
+    /**
+     * Menyiapkan data employee, menghitung masa_kerja_tahun & bulan
+     * secara otomatis dari tmt_masa_kerja apabila tersedia.
+     */
+    protected function buildEmployeeData(array $input): array
+    {
+        $tmt = !empty($input['tmt_masa_kerja'])
+            ? \Carbon\Carbon::parse($input['tmt_masa_kerja'])
+            : null;
+
+        if ($tmt) {
+            $diff = $tmt->diff(now());
+            $tahun = $diff->y;
+            $bulan = $diff->m;
+        } else {
+            $tahun = $input['masa_kerja_tahun'] ?? 0;
+            $bulan = $input['masa_kerja_bulan'] ?? 0;
+        }
+
+        return [
+            'jabatan'          => $input['jabatan'] ?? null,
+            'golongan'         => $input['golongan'] ?? null,
+            'unit_kerja'       => $input['unit_kerja'] ?? null,
+            'tmt_masa_kerja'   => $tmt ? $tmt->toDateString() : null,
+            'masa_kerja_tahun' => $tahun,
+            'masa_kerja_bulan' => $bulan,
+        ];
     }
 }

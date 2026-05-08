@@ -180,19 +180,72 @@
             <x-input-error for="unit_kerja" class="mt-2" />
         </div>
 
-        <div class="col-span-6 sm:col-span-3">
+        <div class="col-span-6 sm:col-span-3"
+             x-data="masaKerjaCalc(@js($this->state['tmt_masa_kerja'] ?? ''))"
+             x-init="init()">
             <x-label value="{{ __('Masa Kerja') }}" />
-            <div class="flex gap-2 mt-1">
-                <div class="flex-1">
-                    <x-input id="masa_kerja_tahun" type="number" min="0" class="block w-full" wire:model.defer="state.masa_kerja_tahun" placeholder="Tahun" />
+
+            {{-- Input TMT Masa Kerja --}}
+            <div class="mt-1">
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">TMT Masa Kerja</label>
+                <input
+                    id="tmt_masa_kerja"
+                    type="date"
+                    wire:model.defer="state.tmt_masa_kerja"
+                    x-model="tmt"
+                    @change="hitung()"
+                    class="block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                />
+            </div>
+
+            {{-- Hasil Kalkulasi Otomatis (read-only) --}}
+            <div class="mt-2 flex items-center gap-2">
+                <div class="flex-1 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <span class="font-semibold text-violet-600 dark:text-violet-400" x-text="tahun">0</span>
+                    <span>Tahun</span>
                 </div>
-                <div class="flex-1">
-                    <x-input id="masa_kerja_bulan" type="number" min="0" max="11" class="block w-full" wire:model.defer="state.masa_kerja_bulan" placeholder="Bulan" />
+                <div class="flex-1 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <span class="font-semibold text-violet-600 dark:text-violet-400" x-text="bulan">0</span>
+                    <span>Bulan</span>
                 </div>
             </div>
-            <x-input-error for="masa_kerja_tahun" class="mt-2" />
-            <x-input-error for="masa_kerja_bulan" class="mt-2" />
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Dihitung otomatis dari TMT Masa Kerja</p>
+
+            <x-input-error for="tmt_masa_kerja" class="mt-2" />
         </div>
+
+        @once
+        <script>
+            function masaKerjaCalc(initialTmt) {
+                return {
+                    tmt: initialTmt || '',
+                    tahun: 0,
+                    bulan: 0,
+                    init() {
+                        this.hitung();
+                    },
+                    hitung() {
+                        if (!this.tmt) {
+                            this.tahun = 0;
+                            this.bulan = 0;
+                            return;
+                        }
+                        const tgl = new Date(this.tmt);
+                        const sekarang = new Date();
+                        let tahun = sekarang.getFullYear() - tgl.getFullYear();
+                        let bulan = sekarang.getMonth() - tgl.getMonth();
+                        if (bulan < 0) {
+                            tahun--;
+                            bulan += 12;
+                        }
+                        if (tahun < 0) tahun = 0;
+                        this.tahun = tahun;
+                        this.bulan = bulan;
+                    }
+                };
+            }
+        </script>
+        @endonce
 
         <!-- Row 4: WhatsApp dan Email -->
         <div class="col-span-6 sm:col-span-3">

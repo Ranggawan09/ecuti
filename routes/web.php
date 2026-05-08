@@ -185,6 +185,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::resource('leave-types', App\Http\Controllers\Admin\LeaveTypeController::class)
                 ->only(['index', 'store', 'update', 'destroy']);
 
+            // Tanggal Merah & Cuti Bersama
+            Route::get('public-holidays', [\App\Http\Controllers\Admin\PublicHolidayController::class, 'index'])
+                ->name('public-holidays.index');
+            Route::get('public-holidays/{tahun}/data', [\App\Http\Controllers\Admin\PublicHolidayController::class, 'getByYear'])
+                ->name('public-holidays.get-by-year');
+            Route::post('public-holidays/bulk-save', [\App\Http\Controllers\Admin\PublicHolidayController::class, 'bulkSave'])
+                ->name('public-holidays.bulk-save');
+
             // User & Employee
             Route::resource('users',
                 \App\Http\Controllers\Admin\UserController::class

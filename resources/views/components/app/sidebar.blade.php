@@ -286,6 +286,17 @@
                             </div>
                         </a>
                     </li>
+                    <!-- Tanggal Merah & Cuti Bersama -->
+                    <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 @if(Route::is('admin.public-holidays.index')){{ 'bg-gradient-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' }}@endif">
+                        <a class="block text-gray-800 dark:text-gray-100 truncate transition @if(!Route::is('admin.public-holidays.index')){{ 'hover:text-gray-900 dark:hover:text-white' }}@endif" href="{{ route('admin.public-holidays.index') }}">
+                            <div class="flex items-center">
+                                <svg class="shrink-0 fill-current @if(Route::is('admin.public-holidays.index')){{ 'text-violet-500' }}@else{{ 'text-gray-400 dark:text-gray-500' }}@endif" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M15 2h-2V0h-2v2H5V0H3v2H1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Zm-1 12H2V6h12v8Zm0-10H2V4h12v1Z"/>
+                                </svg>
+                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 duration-200">Tanggal Merah</span>
+                            </div>
+                        </a>
+                    </li>
                 </ul>
             </div>
             @endif
