@@ -228,7 +228,7 @@ class UserController extends Controller
             
             return $pdf->download('users-' . date('Y-m-d') . '.pdf');
         } catch (\Exception $e) {
-            \Log::error('PDF Export Error: ' . $e->getMessage());
+            Log::error('PDF Export Error: ' . $e->getMessage());
             
             return redirect()->back()
                 ->with('error', 'Gagal mengexport PDF. Error: ' . $e->getMessage());

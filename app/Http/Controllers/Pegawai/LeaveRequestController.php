@@ -23,9 +23,7 @@ class LeaveRequestController extends Controller
 
         // Transform data for JavaScript
         $leaveRequestsData = $leaveRequests->map(function ($leave) {
-            // Ambil catatan dari approval terbaru yang memiliki note
             $latestNoteApproval = $leave->approvals
-                ->filter(fn($a) => !empty($a->note))
                 ->sortByDesc('created_at')
                 ->first();
 

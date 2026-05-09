@@ -75,16 +75,7 @@ return [
     |
     */
 
-    'home' => function () {
-    return match (Auth::user()->role) {
-        'pegawai'               => route('pegawai.dashboard'),
-        'atasan_langsung'       => route('atasan-langsung.dashboard'),
-        'atasan_tidak_langsung' => route('atasan-tidak-langsung.dashboard'),
-        'kepegawaian'           => route('kepegawaian.dashboard'),
-        'admin'                 => route('admin.dashboard'),
-        default                 => '/',
-    };
-},
+    'home' => '/dashboard',
 
     
 

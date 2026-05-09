@@ -21,7 +21,7 @@ class LeaveRequestController extends Controller
     {
         $leaveRequests = LeaveRequest::with(['employee.user', 'leaveType'])
             ->whereNull('printed_at')
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('updated_at', 'asc')
             ->get();
 
         return view('pages.kepegawaian.leave_requests.index', compact('leaveRequests'));
@@ -160,7 +160,7 @@ class LeaveRequestController extends Controller
             return $pdf->download('leave-requests-' . date('Y-m-d') . '.pdf');
         }
         catch (\Exception $e) {
-            \Log::error('PDF Export Error (Leave Requests): ' . $e->getMessage());
+            Log::error('PDF Export Error (Leave Requests): ' . $e->getMessage());
 
             return redirect()->back()
                 ->with('error', 'Gagal mengexport PDF. Error: ' . $e->getMessage());
