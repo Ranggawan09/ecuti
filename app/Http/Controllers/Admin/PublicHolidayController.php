@@ -44,7 +44,7 @@ class PublicHolidayController extends Controller
     {
         $rows = PublicHoliday::where('tahun', $tahun)
             ->orderBy('bulan')
-            ->get(['bulan', 'tanggal_merah', 'cuti_bersama']);
+            ->get(['bulan', 'tanggal_merah']);
 
         // Buat array lengkap 12 bulan
         $result = [];
@@ -53,7 +53,6 @@ class PublicHolidayController extends Controller
             $result[] = [
                 'bulan'         => $m,
                 'tanggal_merah' => $row?->tanggal_merah ?? '',
-                'cuti_bersama'  => $row?->cuti_bersama ?? '',
             ];
         }
 
@@ -69,7 +68,6 @@ class PublicHolidayController extends Controller
             'tahun'         => 'required|integer|min:2000|max:2100',
             'bulan'         => 'required|integer|min:1|max:12',
             'tanggal_merah' => 'nullable|string|max:200',
-            'cuti_bersama'  => 'nullable|string|max:200',
         ]);
 
         PublicHoliday::updateOrCreate(
@@ -79,7 +77,6 @@ class PublicHolidayController extends Controller
             ],
             [
                 'tanggal_merah' => PublicHoliday::sanitizeDates($request->tanggal_merah),
-                'cuti_bersama'  => PublicHoliday::sanitizeDates($request->cuti_bersama),
             ]
         );
 
@@ -96,7 +93,6 @@ class PublicHolidayController extends Controller
             'rows'                => 'required|array|size:12',
             'rows.*.bulan'        => 'required|integer|min:1|max:12',
             'rows.*.tanggal_merah'=> 'nullable|string|max:200',
-            'rows.*.cuti_bersama' => 'nullable|string|max:200',
         ]);
 
         foreach ($request->rows as $row) {
@@ -107,7 +103,6 @@ class PublicHolidayController extends Controller
                 ],
                 [
                     'tanggal_merah' => PublicHoliday::sanitizeDates($row['tanggal_merah'] ?? null),
-                    'cuti_bersama'  => PublicHoliday::sanitizeDates($row['cuti_bersama'] ?? null),
                 ]
             );
         }

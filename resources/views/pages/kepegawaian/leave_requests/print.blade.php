@@ -6,61 +6,65 @@
     <title>Formulir Permintaan dan Pemberian Cuti</title>
     <style>
         @page {
-            size: A4;
-            margin: 0.7cm 1.0cm 0.6cm 1.0cm;
+            size: A4 portrait;
+            margin: 1.2cm 1.2cm 1.0cm 1.2cm;
         }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%;
             font-family: 'Times New Roman', Times, serif;
-            font-size: 8.5pt;
-            line-height: 1.3;
+            font-size: 8pt;
+            line-height: 1.25;
             color: #000;
-            background: white;
+            background: #fff;
         }
         .wrap {
             width: 100%;
-            max-width: 19cm;
-            margin: 0 auto;
         }
 
         /* Header kanan */
         .hdr-right {
             text-align: right;
-            font-size: 8.5pt;
-            line-height: 1.55;
-            margin-bottom: 4px;
+            font-size: 8pt;
+            line-height: 1.5;
+            margin-bottom: 3px;
         }
 
         /* Judul tengah */
         .judul {
             text-align: center;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
         }
         .judul h2 {
-            font-size: 9.5pt;
+            font-size: 9pt;
             font-weight: bold;
             text-transform: uppercase;
             text-decoration: underline;
         }
         .judul .nomor {
-            font-size: 8.5pt;
+            font-size: 8pt;
             font-weight: bold;
         }
 
         /* Tables */
         table {
             width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
+            border: 1px solid #000;
             margin-bottom: 2px;
+            page-break-inside: avoid;
         }
         td, th {
             border: 1px solid #000;
-            padding: 1.5px 4px;
+            padding: 1.5px 3px;
             font-size: 8pt;
             vertical-align: top;
             text-align: left;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
-        .bold { font-weight: bold; }
+        .bold   { font-weight: bold; }
         .center { text-align: center; }
         .right  { text-align: right; }
         .noborder { border: none !important; }
@@ -149,6 +153,20 @@
     $tglSelesai = \Carbon\Carbon::parse($leaveRequest->end_date)->locale('id')->isoFormat('D MMMM YYYY');
     $tahunSurat = \Carbon\Carbon::parse($leaveRequest->created_at)->format('Y');
 
+    /* Rentang tanggal cuti: "12-14 Oktober 2025" / "30 Sep - 2 Okt 2025" / "30 Des 2025 - 2 Jan 2026" */
+    $dtMulai   = \Carbon\Carbon::parse($leaveRequest->start_date)->locale('id');
+    $dtSelesai = \Carbon\Carbon::parse($leaveRequest->end_date)->locale('id');
+    if ($dtMulai->year === $dtSelesai->year && $dtMulai->month === $dtSelesai->month) {
+        // Bulan & tahun sama → "12-14 Oktober 2025"
+        $lamaCutiStr = $dtMulai->day . '-' . $dtSelesai->isoFormat('D MMMM YYYY');
+    } elseif ($dtMulai->year === $dtSelesai->year) {
+        // Tahun sama tapi bulan beda → "30 September - 2 Oktober 2025"
+        $lamaCutiStr = $dtMulai->isoFormat('D MMMM') . ' - ' . $dtSelesai->isoFormat('D MMMM YYYY');
+    } else {
+        // Tahun beda → "30 Desember 2025 - 2 Januari 2026"
+        $lamaCutiStr = $dtMulai->isoFormat('D MMMM YYYY') . ' - ' . $dtSelesai->isoFormat('D MMMM YYYY');
+    }
+
     /* Nomor surat dari DB; fallback ke auto-generate */
     $nomorSurat = $leaveRequest->nomor_surat
         ?? ($leaveRequest->no_urut . '/KPN.W14.U5/KP5.3/' . $rBln . '/' . $tahunSurat);
@@ -184,25 +202,31 @@
 {{-- I. DATA PEGAWAI                                             --}}
 {{-- ============================================================ --}}
 <table>
+    <colgroup>
+        <col style="width:13%">
+        <col style="width:37%">
+        <col style="width:13%">
+        <col style="width:37%">
+    </colgroup>
     <tr>
         <td colspan="4" class="bold">I.&nbsp;&nbsp;Data Pegawai :</td>
     </tr>
     <tr>
-        <td style="width:12%">Nama</td>
-        <td style="width:38%" class="bold">{{ optional($empUser)->nama ?? '-' }}</td>
-        <td style="width:10%">NIP.</td>
+        <td>Nama</td>
+        <td class="bold">{{ optional($empUser)->nama ?? '-' }}</td>
+        <td>NIP.</td>
         <td>{{ optional($empUser)->nip ?? '-' }}</td>
     </tr>
     <tr>
         <td>Jabatan</td>
         <td>{{ optional($emp)->jabatan ?? '-' }}</td>
-        <td>Gol. Ruang :</td>
+        <td>Gol. Ruang</td>
         <td>{{ $golongan }}</td>
     </tr>
     <tr>
         <td>Unit Kerja</td>
         <td>{{ $unitKerja }}</td>
-        <td>Masa Kerja :</td>
+        <td>Masa Kerja</td>
         <td>{{ $masaKerjaStr }}</td>
     </tr>
 </table>
@@ -250,61 +274,103 @@
 {{-- IV. LAMANYA CUTI                                            --}}
 {{-- ============================================================ --}}
 <table>
+    <colgroup>
+        <col style="width:10%">
+        <col style="width:13%">
+        <col style="width:35%">
+        <col style="width:42%">
+    </colgroup>
     <tr>
         <td colspan="4" class="bold">IV.&nbsp;&nbsp;Lamanya Cuti</td>
     </tr>
     <tr>
-        <td style="width:9%">Selama :</td>
-        <td style="width:15%">{{ $days }} hari</td>
-        <td style="width:22%; text-align:center">(Hari/Bulan/Tahun)</td>
-        <td style="text-align:center">{{ $tglMulai }} ↑</td>
+        <td>Selama :</td>
+        <td>{{ $days }} hari</td>
+        <td style="text-align:center">({{ $lamaCutiStr }})</td>
+        <td style="text-align:center">{{ $tglMulai }} s.d. {{ $tglSelesai }}</td>
     </tr>
 </table>
 
 {{-- ============================================================ --}}
 {{-- V. CATATAN CUTI                                             --}}
 {{-- ============================================================ --}}
+{{--
+    Layout: judul baris penuh, lalu dua sub-tabel berdampingan dalam
+    wrapper tabel tanpa border agar kedua sisi punya kotak border sendiri.
+--}}
+
+{{-- Baris judul V --}}
 <table>
-    {{-- Judul --}}
     <tr>
-        <td colspan="5" class="bold">V.&nbsp;&nbsp;Catatan Cuti :</td>
+        <td class="bold">V.&nbsp;&nbsp;Catatan Cuti :</td>
     </tr>
-    {{-- Header kolom --}}
-    <tr>
-        <td colspan="3" class="bold" style="width:40%; text-align:center">1.Cuti Tahunan</td>
-        <td style="width:12%"></td>
-        <td class="bold">2.Cuti Besar</td>
-    </tr>
-    <tr>
-        <td class="bold" style="width:14%">Tahun</td>
-        <td class="bold" style="width:8%; text-align:center">Sisa</td>
-        <td class="bold" style="width:18%">Keterangan</td>
-        <td style="width:12%"></td>
-        <td>3.Cuti Sakit</td>
-    </tr>
-    {{-- N-2 --}}
-    <tr>
-        <td>{{ $cy - 2 }}</td>
-        <td style="text-align:center">{{ optional($balN2)->remaining_days ?? '-' }}</td>
-        <td style="font-size:7pt">{{ $keteranganBal($balN2) }}</td>
-        <td></td>
-        <td>4.Cuti Melahirkan</td>
-    </tr>
-    {{-- N-1 --}}
-    <tr>
-        <td>{{ $cy - 1 }}</td>
-        <td style="text-align:center">{{ optional($balN1)->remaining_days ?? '-' }}</td>
-        <td style="font-size:7pt">{{ $keteranganBal($balN1) }}</td>
-        <td></td>
-        <td>5.Cuti karena alasan penting</td>
-    </tr>
-    {{-- N (tahun ini) --}}
-    <tr>
-        <td>{{ $cy }}</td>
-        <td style="text-align:center">{{ optional($balN)->remaining_days ?? '-' }}</td>
-        <td style="font-size:7pt">{{ $keteranganBal($balN) }}</td>
-        <td></td>
-        <td>6.Cuti diluar tanggungan negara</td>
+</table>
+
+{{-- Wrapper: dua sub-tabel berdampingan --}}
+<table style="margin-bottom:2px; border:none">
+    <colgroup>
+        <col style="width:52%">
+        <col style="width:4%">
+        <col style="width:44%">
+    </colgroup>
+    <tr style="border:none">
+        {{-- Sub-tabel KIRI: Cuti Tahunan --}}
+        <td style="border:none; padding:0; vertical-align:top">
+            <table style="width:100%; margin:0; border-collapse:collapse; table-layout:fixed; border: 1px solid #000">
+                <colgroup>
+                    <col style="width:30%">
+                    <col style="width:20%">
+                    <col style="width:50%">
+                </colgroup>
+                <tr>
+                    <td colspan="3" class="bold" style="text-align:center">1. Cuti Tahunan</td>
+                </tr>
+                <tr>
+                    <td class="bold">Tahun</td>
+                    <td class="bold" style="text-align:center">Sisa</td>
+                    <td class="bold">Keterangan</td>
+                </tr>
+                <tr>
+                    <td>{{ $cy - 2 }}</td>
+                    <td style="text-align:center">{{ optional($balN2)->remaining_days ?? '-' }}</td>
+                    <td style="font-size:7pt">{{ $keteranganBal($balN2) }}</td>
+                </tr>
+                <tr>
+                    <td>{{ $cy - 1 }}</td>
+                    <td style="text-align:center">{{ optional($balN1)->remaining_days ?? '-' }}</td>
+                    <td style="font-size:7pt">{{ $keteranganBal($balN1) }}</td>
+                </tr>
+                <tr>
+                    <td>{{ $cy }}</td>
+                    <td style="text-align:center">{{ optional($balN)->remaining_days ?? '-' }}</td>
+                    <td style="font-size:7pt">{{ $keteranganBal($balN) }}</td>
+                </tr>
+            </table>
+        </td>
+
+        {{-- Jarak tengah --}}
+        <td style="border:none; padding:0"></td>
+
+        {{-- Sub-tabel KANAN: jenis cuti lainnya --}}
+        <td style="border:none; padding:0; vertical-align:top">
+            <table style="width:100%; margin:0; border-collapse:collapse; table-layout:fixed; border: 1px solid #000">
+                <tr>
+                    <td>2. Cuti Besar</td>
+                </tr>
+                <tr>
+                    <td>3. Cuti Sakit</td>
+                </tr>
+                <tr>
+                    <td>4. Cuti Melahirkan</td>
+                </tr>
+                <tr>
+                    <td>5. Cuti karena alasan penting</td>
+                </tr>
+                <tr>
+                    <td>6. Cuti diluar tanggungan negara</td>
+                </tr>
+            </table>
+        </td>
     </tr>
 </table>
 
@@ -315,25 +381,32 @@
     <tr>
         <td colspan="3" class="bold">VI.&nbsp;&nbsp;Alamat selama menjalankan Cuti :</td>
     </tr>
+    <colgroup>
+        <col style="width:44%">
+        <col style="width:12%">
+        <col style="width:44%">
+    </colgroup>
     <tr>
-        <td style="width:45%; height:85px; vertical-align:top; padding:3px 6px">
+        <td style="height:70px; vertical-align:top; padding:2px 4px">
             {{ $address }}
         </td>
-        <td style="width:12%; vertical-align:top; padding:2px 6px">
+        <td style="vertical-align:top; padding:2px 4px">
             Telephone:
         </td>
-        <td style="width:43%; vertical-align:top; padding:2px 6px">
+        <td style="vertical-align:top; padding:2px 4px">
             {{ $phone }}<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hormat saya ,<br>
-            @if(optional($emp)->signature_path)
-                <img src="{{ asset('storage/' . $emp->signature_path) }}"
-                     style="max-height:38px; max-width:100px; display:block; margin:2px 4px"
-                     alt="TTD">
-            @else
-                <div style="height:38px"></div>
-            @endif
-            <strong>{{ optional($empUser)->nama ?? '-' }}</strong><br>
-            NIP. {{ optional($empUser)->nip ?? '-' }}
+            <div style="text-align:right; padding-right:4px">
+                Hormat saya ,<br>
+                @if(optional($emp)->signature_path)
+                    <img src="{{ asset('storage/' . $emp->signature_path) }}"
+                         style="max-height:32px; max-width:90px; display:block; margin-left:auto; margin-bottom:1px"
+                         alt="TTD">
+                @else
+                    <div style="height:32px"></div>
+                @endif
+                <strong>{{ optional($empUser)->nama ?? '-' }}</strong><br>
+                NIP. {{ optional($empUser)->nip ?? '-' }}
+            </div>
         </td>
     </tr>
 </table>
@@ -360,15 +433,15 @@
         </td>
     </tr>
     <tr>
-        <td colspan="4" style="height:85px; vertical-align:bottom; padding:4px 8px">
+        <td colspan="4" style="height:65px; vertical-align:bottom; padding:3px 6px">
             <div style="text-align:right">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Panitera ,<br>
+                Panitera ,<br>
                 @if(optional($aLEmp)->signature_path)
                     <img src="{{ asset('storage/' . $aLEmp->signature_path) }}"
-                         style="max-height:38px; max-width:120px; display:block; margin-left:auto; margin-bottom:2px"
+                         style="max-height:30px; max-width:110px; display:block; margin-left:auto; margin-bottom:1px"
                          alt="TTD">
                 @else
-                    <div style="height:38px"></div>
+                    <div style="height:30px"></div>
                 @endif
                 <strong>{{ optional($aL)->nama ?? '' }}</strong><br>
                 NIP. {{ optional($aL)->nip ?? '' }}
@@ -399,15 +472,15 @@
         </td>
     </tr>
     <tr>
-        <td colspan="4" style="height:85px; vertical-align:bottom; padding:4px 8px">
+        <td colspan="4" style="height:65px; vertical-align:bottom; padding:3px 6px">
             <div style="text-align:right">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ketua ,<br>
+                Ketua ,<br>
                 @if(optional($aTLEmp)->signature_path)
                     <img src="{{ asset('storage/' . $aTLEmp->signature_path) }}"
-                         style="max-height:38px; max-width:120px; display:block; margin-left:auto; margin-bottom:2px"
+                         style="max-height:30px; max-width:110px; display:block; margin-left:auto; margin-bottom:1px"
                          alt="TTD">
                 @else
-                    <div style="height:38px"></div>
+                    <div style="height:30px"></div>
                 @endif
                 <strong>{{ optional($aTL)->nama ?? '' }}</strong><br>
                 NIP. {{ optional($aTL)->nip ?? '' }}

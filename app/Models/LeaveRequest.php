@@ -16,6 +16,9 @@ class LeaveRequest extends Model
         'start_date',
         'end_date',
         'total_days',
+        'calendar_days',
+        'skipped_weekend',
+        'skipped_holiday',
         'reason',
         'address_during_leave',
         'status',
@@ -26,10 +29,44 @@ class LeaveRequest extends Model
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'printed_at' => 'datetime',
+        'start_date'      => 'date',
+        'end_date'        => 'date',
+        'printed_at'      => 'datetime',
+        'calendar_days'   => 'integer',
+        'skipped_weekend' => 'integer',
+        'skipped_holiday' => 'integer',
     ];
+
+    /**
+     * Accessor: kembalikan breakdown hari kerja.
+     * Untuk data lama (null), hitung ulang on-the-fly.
+     */
+    public function getWorkingDaysBreakdownAttribute(): array
+    {
+        if (!is_null($this->calendar_days)) {
+            return [
+                'working_days'    => $this->total_days,
+                'calendar_days'   => $this->calendar_days,
+                'skipped_weekend' => $this->skipped_weekend ?? 0,
+                'skipped_holiday' => $this->skipped_holiday ?? 0,
+            ];
+        }
+
+        // Data lama: hitung ulang
+        if ($this->start_date && $this->end_date) {
+            return \App\Services\LeaveCalculatorService::calculate(
+                $this->start_date->format('Y-m-d'),
+                $this->end_date->format('Y-m-d')
+            );
+        }
+
+        return [
+            'working_days'    => $this->total_days,
+            'calendar_days'   => $this->total_days,
+            'skipped_weekend' => 0,
+            'skipped_holiday' => 0,
+        ];
+    }
 
     // Relasi ke Employee
     public function employee()

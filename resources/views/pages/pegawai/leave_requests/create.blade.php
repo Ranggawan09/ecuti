@@ -19,7 +19,7 @@
         <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <h2 class="font-semibold text-gray-800 dark:text-gray-100">Form Pengajuan Cuti</h2>
         </div>
-        <form action="{{ route('pegawai.leave-requests.store') }}" method="POST" x-data="leaveRequestForm(@js($leaveTypes))">
+        <form action="{{ route('pegawai.leave-requests.store') }}" method="POST" x-data="leaveRequestForm(@js($leaveTypes), @js($publicHolidays))">
             @csrf
             <div class="p-6 space-y-6">
 
@@ -96,15 +96,20 @@
                     @enderror
                 </div>
 
-                <!-- Total Days (Display Only) -->
+                <!-- Total Hari (Display Only) -->
                 <div>
                     <label class="block text-sm font-medium text-gray-800 dark:text-gray-100 mb-2">
                         Total Hari
                     </label>
-                    <div class="inline-flex font-medium rounded-full text-center px-4 py-2 bg-violet-100 dark:bg-violet-500/30 text-violet-600 dark:text-violet-400">
-                        <span x-text="totalDays > 0 ? totalDays + ' hari' : '-'"></span>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <div class="inline-flex font-medium rounded-full text-center px-4 py-2 bg-violet-100 dark:bg-violet-500/30 text-violet-600 dark:text-violet-400">
+                            <span x-text="totalDays > 0 ? totalDays + ' hari kerja' : '-'"></span>
+                        </div>
+                        <span x-show="workingDaysNote" x-text="workingDaysNote"
+                              class="text-xs text-amber-600 dark:text-amber-400 font-medium bg-amber-50 dark:bg-amber-900/30 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-700/50">
+                        </span>
                     </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total hari akan dihitung otomatis berdasarkan tanggal mulai dan selesai</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sabtu, Minggu, dan tanggal merah tidak dihitung</p>
                     @error('total_days')
                         <p class="text-sm text-red-500 mt-1 font-medium">{{ $message }}</p>
                     @enderror
@@ -169,7 +174,7 @@
 </div>
 
 <script>
-function leaveRequestForm(leaveTypesData) {
+function leaveRequestForm(leaveTypesData, publicHolidays) {
     return {
         leaveTypes: leaveTypesData,
         leaveTypeId: '{{ old('leave_type_id') }}',
@@ -178,6 +183,9 @@ function leaveRequestForm(leaveTypesData) {
         startDate: '{{ old('start_date') }}',
         endDate: '{{ old('end_date') }}',
         totalDays: 0,
+        calendarDays: 0,
+        workingDaysNote: '',
+        publicHolidays: publicHolidays,
         
         init() {
             if (this.leaveTypeId) {
@@ -221,14 +229,44 @@ function leaveRequestForm(leaveTypesData) {
         calculateDays() {
             if (this.startDate && this.endDate) {
                 const start = new Date(this.startDate);
-                const end = new Date(this.endDate);
-                
+                const end   = new Date(this.endDate);
+
                 if (end >= start) {
-                    const diffTime = Math.abs(end - start);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                    this.totalDays = diffDays;
+                    let workingDays    = 0;
+                    let skippedWeekend = 0;
+                    let skippedHoliday = 0;
+                    let calendarDays   = 0;
+
+                    const cur = new Date(start);
+                    while (cur <= end) {
+                        calendarDays++;
+                        const dow = cur.getDay(); // 0=Sun, 6=Sat
+                        const ymd = cur.toISOString().slice(0, 10);
+
+                        if (dow === 0 || dow === 6) {
+                            skippedWeekend++;
+                        } else if (this.publicHolidays.includes(ymd)) {
+                            skippedHoliday++;
+                        } else {
+                            workingDays++;
+                        }
+
+                        cur.setDate(cur.getDate() + 1);
+                    }
+
+                    this.totalDays    = workingDays;
+                    this.calendarDays = calendarDays;
+
+                    // Susun keterangan
+                    const parts = [];
+                    if (skippedWeekend > 0) parts.push(skippedWeekend + ' weekend');
+                    if (skippedHoliday > 0) parts.push(skippedHoliday + ' libur nasional');
+                    this.workingDaysNote = parts.length > 0
+                        ? '(' + calendarDays + ' hari kalender, ' + parts.join(' + ') + ' tidak dihitung)'
+                        : '';
                 } else {
                     this.totalDays = 0;
+                    this.workingDaysNote = '';
                 }
             }
         }

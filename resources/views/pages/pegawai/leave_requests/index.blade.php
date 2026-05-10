@@ -148,8 +148,19 @@
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.tanggalSelesai">
                                     <div class="text-gray-600 dark:text-gray-300" x-text="leave.end_date_formatted"></div>
                                 </td>
-                                <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.totalHari">
-                                    <div class="text-gray-600 dark:text-gray-300" x-text="leave.total_days + ' hari'"></div>
+                                <td class="px-2 first:pl-5 last:pr-5 py-3" x-show="columns.totalHari">
+                                    <div class="flex flex-col gap-0.5">
+                                        <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-violet-100 dark:bg-violet-500/30 text-violet-600 dark:text-violet-400 w-fit"
+                                             x-text="leave.total_days + ' hari kerja'"></div>
+                                        <template x-if="(leave.skipped_weekend > 0 || leave.skipped_holiday > 0) && leave.calendar_days">
+                                            <div class="text-xs text-amber-600 dark:text-amber-400" x-text="
+                                                '(' + leave.calendar_days + ' kal' +
+                                                (leave.skipped_weekend > 0 ? ', ' + leave.skipped_weekend + ' wknd' : '') +
+                                                (leave.skipped_holiday > 0 ? ', ' + leave.skipped_holiday + ' libur' : '') +
+                                                ' dilewati)'
+                                            "></div>
+                                        </template>
+                                    </div>
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" x-show="columns.status">
                                     <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5" 

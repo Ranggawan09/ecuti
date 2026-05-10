@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LeaveRequest;
 use App\Models\Employee;
 use App\Models\LeaveType;
+use App\Services\LeaveCalculatorService;
 use App\Services\LeaveRequestService;
 use App\Services\WhatsappService;
 use Illuminate\Http\Request;
@@ -35,6 +36,9 @@ class LeaveRequestController extends Controller
             'end_date' => $leave->end_date->format('Y-m-d'),
             'end_date_formatted' => $leave->end_date->format('d M Y'),
             'total_days' => $leave->total_days,
+            'calendar_days' => $leave->calendar_days,
+            'skipped_weekend' => $leave->skipped_weekend,
+            'skipped_holiday' => $leave->skipped_holiday,
             'status' => $leave->status,
             'catatan_atasan' => $latestNoteApproval?->note,
             'catatan_dari' => $latestNoteApproval?->approver?->nama,
@@ -65,8 +69,16 @@ class LeaveRequestController extends Controller
         }
 
         $leaveTypes = LeaveType::all();
+        $currentYear = now()->year;
+        $nextYear    = $currentYear + 1;
 
-        return view('pages.pegawai.leave_requests.create', compact('employee', 'leaveTypes'));
+        // Kirim tanggal merah untuk tahun ini dan tahun depan ke frontend
+        $publicHolidays = array_merge(
+            \App\Services\LeaveCalculatorService::getHolidayDatesForYear($currentYear),
+            \App\Services\LeaveCalculatorService::getHolidayDatesForYear($nextYear)
+        );
+
+        return view('pages.pegawai.leave_requests.create', compact('employee', 'leaveTypes', 'publicHolidays'));
     }
 
     public function store(Request $request)
@@ -101,10 +113,9 @@ class LeaveRequestController extends Controller
             'is_penangguhan' => 'nullable|boolean',
         ]);
 
-        // Calculate total days
-        $startDate = new \DateTime($validated['start_date']);
-        $endDate = new \DateTime($validated['end_date']);
-        $totalDays = $startDate->diff($endDate)->days + 1;
+        // Hitung hari kerja efektif (kecuali Sabtu, Minggu, dan tanggal merah)
+        $calcResult = LeaveCalculatorService::calculate($validated['start_date'], $validated['end_date']);
+        $totalDays  = $calcResult['working_days'];
 
         // Validate against available leave balance (only if leave type deducts balance)
         $leaveType = \App\Models\LeaveType::find($validated['leave_type_id']);
@@ -138,6 +149,9 @@ class LeaveRequestController extends Controller
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
             'total_days' => $totalDays,
+            'calendar_days' => $calcResult['calendar_days'],
+            'skipped_weekend' => $calcResult['skipped_weekend'],
+            'skipped_holiday' => $calcResult['skipped_holiday'],
             'reason' => $validated['reason'],
             'address_during_leave' => $validated['address_during_leave'],
             'is_penangguhan' => $validated['is_penangguhan'] ?? false,
@@ -227,11 +241,12 @@ class LeaveRequestController extends Controller
             throw $e;
         }
 
-        // Hitung total hari
-        $startDate = new \DateTime($validated['start_date']);
-        $endDate = new \DateTime($validated['end_date']);
-        $totalDays = $startDate->diff($endDate)->days + 1;
-        $validated['total_days'] = $totalDays;
+        // Hitung hari kerja efektif
+        $calcResult = LeaveCalculatorService::calculate($validated['start_date'], $validated['end_date']);
+        $validated['total_days']      = $calcResult['working_days'];
+        $validated['calendar_days']   = $calcResult['calendar_days'];
+        $validated['skipped_weekend'] = $calcResult['skipped_weekend'];
+        $validated['skipped_holiday'] = $calcResult['skipped_holiday'];
 
         // Tentukan status reset berdasarkan level approver terakhir yang memproses
         // (approval dengan status selain "menunggu_*", paling baru)

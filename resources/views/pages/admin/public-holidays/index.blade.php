@@ -4,8 +4,8 @@
     {{-- ===== PAGE HEADER ===== --}}
     <div class="sm:flex sm:justify-between sm:items-center mb-8">
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Tanggal Merah &amp; Cuti Bersama</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Kelola tanggal merah dan cuti bersama per tahun dan per bulan</p>
+            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Tanggal Merah</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Kelola tanggal merah per tahun dan per bulan</p>
         </div>
 
         {{-- Tambah Tahun Baru --}}
@@ -141,7 +141,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">
-                            Tanggal Merah &amp; Cuti Bersama
+                             Tanggal Merah
                             <span class="text-violet-500" x-text="selectedYear"></span>
                         </h3>
                         <p class="text-xs text-gray-500 dark:text-gray-400">Pisahkan tanggal dengan tanda koma (contoh: 1, 5, 17)</p>
@@ -177,12 +177,6 @@
                                     Tanggal Merah
                                 </div>
                             </th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-3 h-3 rounded-full bg-amber-400 shrink-0"></span>
-                                    Cuti Bersama
-                                </div>
-                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -209,23 +203,6 @@
                                         <span x-show="row.tanggal_merah"
                                               class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-red-400 font-medium select-none"
                                               x-text="countDates(row.tanggal_merah) + ' tgl'">
-                                        </span>
-                                    </div>
-                                </td>
-                                {{-- Cuti Bersama Input --}}
-                                <td class="px-4 py-2">
-                                    <div class="relative">
-                                        <input
-                                            type="text"
-                                            x-model="row.cuti_bersama"
-                                            :id="'cb-' + idx"
-                                            placeholder="2, 3"
-                                            class="form-input w-full text-sm pr-8 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-amber-400 focus:ring-amber-300"
-                                            @blur="formatInput($event)"
-                                        >
-                                        <span x-show="row.cuti_bersama"
-                                              class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-amber-500 font-medium select-none"
-                                              x-text="countDates(row.cuti_bersama) + ' tgl'">
                                         </span>
                                     </div>
                                 </td>
@@ -340,7 +317,6 @@ function publicHolidaysPage() {
                 this.modalRows = Array.from({ length: 12 }, (_, i) => ({
                     bulan: i + 1,
                     tanggal_merah: '',
-                    cuti_bersama: '',
                 }));
             } finally {
                 this.modalLoading = false;
