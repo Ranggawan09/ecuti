@@ -109,17 +109,47 @@
                                 <input type="checkbox" name="roles[]" value="kepegawaian" class="form-checkbox text-violet-500 rounded-sm" id="role_kepegawaian" {{ is_array($userRoles) && in_array('kepegawaian', $userRoles) ? 'checked' : '' }}>
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Kepegawaian</span>
                             </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" name="roles[]" value="atasan_langsung" class="form-checkbox text-violet-500 rounded-sm" id="role_atasan_langsung" {{ is_array($userRoles) && in_array('atasan_langsung', $userRoles) ? 'checked' : '' }}>
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Atasan Langsung</span>
+                            <label class="flex items-center group relative">
+                                @if($isAtasanLocked && in_array('atasan_langsung', $userRoles))
+                                    <input type="hidden" name="roles[]" value="atasan_langsung">
+                                @endif
+                                <input type="checkbox" name="roles[]" value="atasan_langsung" class="form-checkbox text-violet-500 rounded-sm" id="role_atasan_langsung" 
+                                    {{ is_array($userRoles) && in_array('atasan_langsung', $userRoles) ? 'checked' : '' }}
+                                    @disabled($isAtasanLocked && in_array('atasan_langsung', $userRoles))>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300 {{ $isAtasanLocked && in_array('atasan_langsung', $userRoles) ? 'opacity-50' : '' }}">
+                                    Atasan Langsung
+                                    @if($isAtasanLocked && in_array('atasan_langsung', $userRoles))
+                                        <span class="text-xs text-red-500 block">(Tanggung Jawab Persetujuan)</span>
+                                    @endif
+                                </span>
                             </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" name="roles[]" value="atasan_tidak_langsung" class="form-checkbox text-violet-500 rounded-sm" id="role_atasan_tidak_langsung" {{ is_array($userRoles) && in_array('atasan_tidak_langsung', $userRoles) ? 'checked' : '' }}>
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Atasan Tidak Langsung</span>
+                            <label class="flex items-center group relative">
+                                @if($isAtasanLocked && in_array('atasan_tidak_langsung', $userRoles))
+                                    <input type="hidden" name="roles[]" value="atasan_tidak_langsung">
+                                @endif
+                                <input type="checkbox" name="roles[]" value="atasan_tidak_langsung" class="form-checkbox text-violet-500 rounded-sm" id="role_atasan_tidak_langsung" 
+                                    {{ is_array($userRoles) && in_array('atasan_tidak_langsung', $userRoles) ? 'checked' : '' }}
+                                    @disabled($isAtasanLocked && in_array('atasan_tidak_langsung', $userRoles))>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300 {{ $isAtasanLocked && in_array('atasan_tidak_langsung', $userRoles) ? 'opacity-50' : '' }}">
+                                    Atasan Tidak Langsung
+                                    @if($isAtasanLocked && in_array('atasan_tidak_langsung', $userRoles))
+                                        <span class="text-xs text-red-500 block">(Tanggung Jawab Persetujuan)</span>
+                                    @endif
+                                </span>
                             </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" name="roles[]" value="pegawai" class="form-checkbox text-violet-500 rounded-sm" id="role_pegawai" {{ is_array($userRoles) && in_array('pegawai', $userRoles) ? 'checked' : '' }}>
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Pegawai</span>
+                            <label class="flex items-center group relative">
+                                @if($isPegawaiLocked && in_array('pegawai', $userRoles))
+                                    <input type="hidden" name="roles[]" value="pegawai">
+                                @endif
+                                <input type="checkbox" name="roles[]" value="pegawai" class="form-checkbox text-violet-500 rounded-sm" id="role_pegawai" 
+                                    {{ is_array($userRoles) && in_array('pegawai', $userRoles) ? 'checked' : '' }}
+                                    @disabled($isPegawaiLocked && in_array('pegawai', $userRoles))>
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300 {{ $isPegawaiLocked && in_array('pegawai', $userRoles) ? 'opacity-50' : '' }}">
+                                    Pegawai
+                                    @if($isPegawaiLocked && in_array('pegawai', $userRoles))
+                                        <span class="text-xs text-red-500 block">(Ada Proses Cuti)</span>
+                                    @endif
+                                </span>
                             </label>
                         </div>
                         @error('roles')

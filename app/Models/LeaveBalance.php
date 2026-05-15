@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LeaveBalance extends Model
 {
@@ -11,6 +12,7 @@ class LeaveBalance extends Model
 
     protected $fillable = [
         'employee_id',
+        'leave_type_id',
         'year',
         'total_days',
         'used_days',
@@ -18,11 +20,20 @@ class LeaveBalance extends Model
         'carried_over_days',
     ];
 
-    /* ================== RELATIONS ================== */
-
-    public function employee()
+    /**
+     * Get the employee that owns the leave balance.
+     */
+    public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    /**
+     * Get the leave type associated with the balance.
+     */
+    public function leaveType(): BelongsTo
+    {
+        return $this->belongsTo(LeaveType::class);
     }
 
     /* ================== BUSINESS LOGIC ================== */

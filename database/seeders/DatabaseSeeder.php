@@ -20,8 +20,8 @@ class DatabaseSeeder extends Seeder
             EmployeeSeeder::class,
             LeaveTypeSeeder::class,
             LeaveBalanceSeeder::class,
-            LeaveRequestSeeder::class,
-            ApprovalSeeder::class,
+            //LeaveRequestSeeder::class,
+            //ApprovalSeeder::class,
             //PengajuansTableSeeder::class,
         ]);
     }

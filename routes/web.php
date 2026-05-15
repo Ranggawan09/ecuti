@@ -3,9 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Pegawai\PengajuanCutiController;
+use App\Http\Controllers\TestUploadController;
 
 /* |-------------------------------------------------------------------------- | AUTH |-------------------------------------------------------------------------- */
 Route::redirect('/', 'login');
+
+// Test endpoint
+Route::post('/test-upload', [TestUploadController::class, 'test'])->name('test.upload');
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
@@ -176,13 +181,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
                 ->name('dashboard');
 
             // export harus di atas resource, kalau di bawah akan ditangkap sebagai show({id} = 'export')
-            Route::get('users/export', [App\Http\Controllers\Admin\UserController::class, 'export'])
+            Route::get('users/export', [\App\Http\Controllers\Admin\UserController::class, 'export'])
                 ->name('users.export');
 
-            Route::get('leave-types/export', [App\Http\Controllers\Admin\LeaveTypeController::class, 'export'])
+            Route::get('leave-types/export', [\App\Http\Controllers\Admin\LeaveTypeController::class, 'export'])
                 ->name('leave-types.export');
 
-            Route::resource('leave-types', App\Http\Controllers\Admin\LeaveTypeController::class)
+            Route::get('leave-types/{leaveType}/quotas', [\App\Http\Controllers\Admin\LeaveTypeController::class, 'quotas'])
+                ->name('leave-types.quotas');
+            Route::post('leave-types/{leaveType}/quotas', [\App\Http\Controllers\Admin\LeaveTypeController::class, 'updateQuotas'])
+                ->name('leave-types.update-quotas');
+
+            Route::resource('leave-types', \App\Http\Controllers\Admin\LeaveTypeController::class)
                 ->only(['index', 'store', 'update', 'destroy']);
 
             // Tanggal Merah & Cuti Bersama

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LeaveType;
+use App\Models\Employee;
+use App\Models\LeaveBalance;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -89,6 +91,56 @@ class LeaveTypeController extends Controller
     private function exportExcel()
     {
         return Excel::download(new LeaveTypesExport, 'jenis-cuti-' . date('Y-m-d') . '.xlsx');
+    }
+
+    public function quotas(LeaveType $leaveType)
+    {
+        $currentYear = (int) now()->year;
+        $years = [$currentYear, $currentYear - 1, $currentYear - 2];
+
+        $employees = Employee::with(['user', 'leaveBalances' => function ($q) use ($leaveType, $years) {
+            $q->where('leave_type_id', $leaveType->id)
+              ->whereIn('year', $years);
+        }])->get();
+
+        return view('pages.admin.leave-types.quotas', compact('leaveType', 'employees'));
+    }
+
+    public function updateQuotas(Request $request, LeaveType $leaveType)
+    {
+        $validated = $request->validate([
+            'quotas' => 'required|array',
+            'quotas.*.year' => 'required|integer|min:2000|max:2099',
+            'quotas.*.employee_id' => 'required|exists:employees,id',
+            'quotas.*.total_days' => 'required|integer|min:0',
+        ]);
+
+        foreach ($validated['quotas'] as $data) {
+            $year = $data['year'];
+            
+            $balance = LeaveBalance::where([
+                'employee_id' => $data['employee_id'],
+                'leave_type_id' => $leaveType->id,
+                'year' => $year,
+            ])->first();
+
+            $usedDays = $balance ? $balance->used_days : 0;
+
+            LeaveBalance::updateOrCreate(
+                [
+                    'employee_id' => $data['employee_id'],
+                    'leave_type_id' => $leaveType->id,
+                    'year' => $year,
+                ],
+                [
+                    'total_days' => $data['total_days'],
+                    'remaining_days' => $data['total_days'] - $usedDays,
+                    'used_days' => $usedDays,
+                ]
+            );
+        }
+
+        return response()->json(['message' => 'Jatah cuti berhasil diperbarui']);
     }
 
     private function exportPdf()

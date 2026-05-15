@@ -17,9 +17,9 @@ class LeaveRequestController extends Controller
     {
         $leaveRequests = LeaveRequest::with(['employee.user', 'leaveType', 'approvals.approver'])
             ->whereHas('employee', function ($q) {
-            $q->where('user_id', auth()->id());
-        })
-            ->oldest('created_at')
+                $q->where('user_id', auth()->id());
+            })
+            ->latest('created_at')
             ->get();
 
         // Transform data for JavaScript
@@ -29,19 +29,19 @@ class LeaveRequestController extends Controller
                 ->first();
 
             return [
-            'id' => $leave->id,
-            'leave_type_name' => $leave->leaveType->name ?? '-',
-            'start_date' => $leave->start_date->format('Y-m-d'),
-            'start_date_formatted' => $leave->start_date->format('d M Y'),
-            'end_date' => $leave->end_date->format('Y-m-d'),
-            'end_date_formatted' => $leave->end_date->format('d M Y'),
-            'total_days' => $leave->total_days,
-            'calendar_days' => $leave->calendar_days,
-            'skipped_weekend' => $leave->skipped_weekend,
-            'skipped_holiday' => $leave->skipped_holiday,
-            'status' => $leave->status,
-            'catatan_atasan' => $latestNoteApproval?->note,
-            'catatan_dari' => $latestNoteApproval?->approver?->nama,
+                'id' => $leave->id,
+                'leave_type_name' => $leave->leaveType->name ?? '-',
+                'start_date' => $leave->start_date->format('Y-m-d'),
+                'start_date_formatted' => $leave->start_date->format('d M Y'),
+                'end_date' => $leave->end_date->format('Y-m-d'),
+                'end_date_formatted' => $leave->end_date->format('d M Y'),
+                'total_days' => $leave->total_days,
+                'calendar_days' => $leave->calendar_days,
+                'skipped_weekend' => $leave->skipped_weekend,
+                'skipped_holiday' => $leave->skipped_holiday,
+                'status' => $leave->status,
+                'catatan_atasan' => $latestNoteApproval?->note,
+                'catatan_dari' => $latestNoteApproval?->approver?->nama,
             ];
         });
 
@@ -70,7 +70,21 @@ class LeaveRequestController extends Controller
 
         $leaveTypes = LeaveType::all();
         $currentYear = now()->year;
-        $nextYear    = $currentYear + 1;
+        $nextYear = $currentYear + 1;
+
+        // Get employee balances for mapping
+        $balances = \App\Models\LeaveBalance::where('employee_id', $employee->id)
+            ->where('year', '>=', $currentYear - 2)
+            ->where('year', '<=', $currentYear)
+            ->get()
+            ->groupBy('leave_type_id');
+
+        $leaveTypes = $leaveTypes->map(function ($type) use ($employee) {
+            if ($type->deduct_balance) {
+                $type->max_days = $employee->getAvailableLeaveBalance($type->id);
+            }
+            return $type;
+        });
 
         // Kirim tanggal merah untuk tahun ini dan tahun depan ke frontend
         $publicHolidays = array_merge(
@@ -115,18 +129,19 @@ class LeaveRequestController extends Controller
 
         // Hitung hari kerja efektif (kecuali Sabtu, Minggu, dan tanggal merah)
         $calcResult = LeaveCalculatorService::calculate($validated['start_date'], $validated['end_date']);
-        $totalDays  = $calcResult['working_days'];
+        $totalDays = $calcResult['working_days'];
 
         // Validate against available leave balance (only if leave type deducts balance)
         $leaveType = \App\Models\LeaveType::find($validated['leave_type_id']);
         if ($leaveType && $leaveType->deduct_balance) {
             $currentYear = now()->year;
-            $oldestYear  = $currentYear - 2; // n-2
+            $oldestYear = $currentYear - 2;
 
-            // Sum available days from oldest year onwards (carried_over_days + remaining_days per year)
+            // Ambil saldo cuti untuk tahun berjalan dan 2 tahun ke belakang
             $balances = \App\Models\LeaveBalance::where('employee_id', $employee->id)
+                ->where('leave_type_id', $leaveType->id)
                 ->where('year', '>=', $oldestYear)
-                ->orderBy('year', 'asc')
+                ->where('year', '<=', $currentYear)
                 ->get();
 
             $totalAvailable = $balances->sum(function ($b) {
@@ -137,7 +152,7 @@ class LeaveRequestController extends Controller
                 return back()
                     ->withInput()
                     ->withErrors([
-                        'total_days' => "Jumlah hari cuti yang diajukan ({$totalDays} hari) melebihi sisa cuti Anda yang tersedia ({$totalAvailable} hari).",
+                        'total_days' => "Jumlah hari cuti yang diajukan ({$totalDays} hari) exceeds available balance ({$totalAvailable} days).",
                     ]);
             }
         }
@@ -162,10 +177,10 @@ class LeaveRequestController extends Controller
         $atasanLangsung = $employee->atasanLangsung;
         if ($atasanLangsung && $atasanLangsung->whatsapp) {
             $wa = new WhatsappService();
-            $leaveType  = $leaveRequest->leaveType->name ?? 'Cuti';
-            $startDate  = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
-            $endDate    = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
-            $totalDays  = $leaveRequest->total_days;
+            $leaveType = $leaveRequest->leaveType->name ?? 'Cuti';
+            $startDate = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
+            $endDate = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
+            $totalDays = $leaveRequest->total_days;
             $namePegawai = $employee->user->nama ?? '-';
 
             $message = "📋 *PENGAJUAN CUTI BARU*\n\n"
@@ -205,6 +220,21 @@ class LeaveRequestController extends Controller
 
         $employee = auth()->user()->employee;
         $leaveTypes = LeaveType::all();
+        $currentYear = now()->year;
+
+        // Get employee balances for mapping
+        $balances = \App\Models\LeaveBalance::where('employee_id', $employee->id)
+            ->where('year', '>=', $currentYear - 2)
+            ->where('year', '<=', $currentYear)
+            ->get()
+            ->groupBy('leave_type_id');
+
+        $leaveTypes = $leaveTypes->map(function ($type) use ($employee) {
+            if ($type->deduct_balance) {
+                $type->max_days = $employee->getAvailableLeaveBalance($type->id);
+            }
+            return $type;
+        });
 
         if ($request->ajax() || $request->wantsJson()) {
             return view('pages.pegawai.leave_requests._edit_partial', compact('leaveRequest', 'employee', 'leaveTypes'));
@@ -230,8 +260,7 @@ class LeaveRequestController extends Controller
                 'reason' => 'required|string',
                 'address_during_leave' => 'required|string',
             ]);
-        }
-        catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
@@ -243,8 +272,8 @@ class LeaveRequestController extends Controller
 
         // Hitung hari kerja efektif
         $calcResult = LeaveCalculatorService::calculate($validated['start_date'], $validated['end_date']);
-        $validated['total_days']      = $calcResult['working_days'];
-        $validated['calendar_days']   = $calcResult['calendar_days'];
+        $validated['total_days'] = $calcResult['working_days'];
+        $validated['calendar_days'] = $calcResult['calendar_days'];
         $validated['skipped_weekend'] = $calcResult['skipped_weekend'];
         $validated['skipped_holiday'] = $calcResult['skipped_holiday'];
 
@@ -253,17 +282,16 @@ class LeaveRequestController extends Controller
         $leaveRequest->load('approvals');
         $lastApproval = $leaveRequest->approvals
             ->filter(fn($a) => !in_array($a->status, [
-        'menunggu_atasan_langsung',
-        'menunggu_atasan_tidak_langsung',
-        ]))
+                'menunggu_atasan_langsung',
+                'menunggu_atasan_tidak_langsung',
+            ]))
             ->sortByDesc('created_at')
             ->first();
 
         if ($lastApproval && $lastApproval->level === 'atasan_tidak_langsung') {
             // Terakhir diproses atasan tidak langsung → balik ke menunggu ATL
             $validated['status'] = 'menunggu_atasan_tidak_langsung';
-        }
-        else {
+        } else {
             // Terakhir diproses atasan langsung, atau belum pernah diproses → balik ke menunggu AL
             $validated['status'] = 'menunggu_atasan_langsung';
         }
@@ -275,13 +303,14 @@ class LeaveRequestController extends Controller
         $employee = $leaveRequest->employee;
         $wa = new WhatsappService();
         $namePegawai = $employee->user->nama ?? '-';
-        $startDate   = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
-        $endDate     = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
+        $startDate = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
+        $endDate = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
 
         if ($validated['status'] === 'menunggu_atasan_tidak_langsung') {
             $atasan = $employee->atasanTidakLangsung;
             if ($atasan && $atasan->whatsapp) {
-                $wa->sendMessage($atasan->whatsapp,
+                $wa->sendMessage(
+                    $atasan->whatsapp,
                     "🔄 *REVISI PENGAJUAN CUTI*\n\n"
                     . "Pegawai: {$namePegawai}\n"
                     . "Tanggal: {$startDate} s/d {$endDate}\n\n"
@@ -291,7 +320,8 @@ class LeaveRequestController extends Controller
         } else {
             $atasan = $employee->atasanLangsung;
             if ($atasan && $atasan->whatsapp) {
-                $wa->sendMessage($atasan->whatsapp,
+                $wa->sendMessage(
+                    $atasan->whatsapp,
                     "🔄 *REVISI PENGAJUAN CUTI*\n\n"
                     . "Pegawai: {$namePegawai}\n"
                     . "Tanggal: {$startDate} s/d {$endDate}\n\n"

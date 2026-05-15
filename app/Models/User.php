@@ -165,4 +165,45 @@ class User extends Authenticatable
     {
         return $this->employee?->signature_path;
     }
+    /**
+     * Check if the user has any active leave requests (draft, pending, or deferred)
+     */
+    public function hasActiveLeaveRequests(): bool
+    {
+        if (!$this->employee) {
+            return false;
+        }
+
+        return $this->employee->leaveRequests()
+            ->whereIn('status', [
+                'draft', 
+                'menunggu_atasan_langsung', 
+                'menunggu_atasan_tidak_langsung', 
+                'perubahan', 
+                'ditangguhkan'
+            ])
+            ->exists();
+    }
+
+    /**
+     * Check if the user has any pending approvals to handle (as Atasan Langsung or Tidak Langsung)
+     */
+    public function hasPendingApprovals(): bool
+    {
+        // Check as Atasan Langsung
+        $pendingLangsung = LeaveRequest::where('status', 'menunggu_atasan_langsung')
+            ->whereHas('employee', function($q) {
+                $q->where('atasan_langsung_id', $this->id);
+            })->exists();
+            
+        if ($pendingLangsung) return true;
+
+        // Check as Atasan Tidak Langsung
+        $pendingTidakLangsung = LeaveRequest::where('status', 'menunggu_atasan_tidak_langsung')
+            ->whereHas('employee', function($q) {
+                $q->where('atasan_tidak_langsung_id', $this->id);
+            })->exists();
+
+        return $pendingTidakLangsung;
+    }
 }

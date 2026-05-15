@@ -6,12 +6,30 @@
         $yearsToFetch = [$currentYear, $currentYear - 1, $currentYear - 2];
         $employee = auth()->user()->employee;
         $leaveBalances = $employee
-            ? $employee->leaveBalances()->whereIn('year', $yearsToFetch)->orderBy('year', 'desc')->get()
+            ? $employee->leaveBalances()
+                ->with('leaveType')
+                ->whereIn('year', $yearsToFetch)
+                ->whereHas('leaveType', function($q) {
+                    $q->where('name', 'like', '%Tahunan%');
+                })
+                ->orderBy('year', 'desc')
+                ->get()
             : collect();
 
         // Current year balance
         $currentBalance = $leaveBalances->firstWhere('year', $currentYear);
-        $totalAvailable = $leaveBalances->sum(fn($b) => max(0, $b->remaining_days) + max(0, $b->carried_over_days));
+        
+        // Calculate pending days for the summary card (only for 'Tahunan' types)
+        $pendingDays = $employee ? $employee->leaveRequests()
+            ->whereIn('status', ['menunggu_atasan_langsung', 'menunggu_atasan_tidak_langsung'])
+            ->whereHas('leaveType', function($q) {
+                $q->where('name', 'like', '%Tahunan%');
+            })
+            ->sum('total_days') : 0;
+        
+        // Total Available = Sum of Remaining - Pending Days
+        $totalAvailable = $leaveBalances->sum('remaining_days') - $pendingDays;
+        $totalAvailable = max(0, $totalAvailable);
 
         // Leave request counts
         $allLeaveRequests = $employee ? $employee->leaveRequests()->latest()->limit(5)->get() : collect();
@@ -24,7 +42,6 @@
     <div class="sm:flex sm:justify-between sm:items-center mb-8">
         <div class="mb-4 sm:mb-0">
             <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Dashboard Pegawai</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Selamat datang, <strong>{{ auth()->user()->nama ?? '-' }}</strong></p>
         </div>
         <div>
             <a href="{{ route('pegawai.leave-requests.create') }}"
@@ -108,14 +125,14 @@
         <!-- Tabel Riwayat Saldo -->
         <div class="lg:col-span-2 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
             <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
-                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Riwayat Sisa Cuti (3 Tahun Terakhir)</h2>
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Riwayat Sisa Cuti Tahunan</h2>
             </header>
             <div class="p-4">
                 <div class="overflow-x-auto">
                     <table class="table-auto w-full text-sm dark:text-gray-300">
-                        <thead class="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50">
+                        <thead class="text-xs uppercase text-gray-500 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-900/20">
                             <tr>
-                                <th class="p-3 text-left">Tahun</th>
+                                <th class="p-3 text-left">Tahun / Jenis</th>
                                 <th class="p-3 text-center">Hak Cuti</th>
                                 <th class="p-3 text-center">Ditangguhkan</th>
                                 <th class="p-3 text-center">Terpakai</th>
@@ -129,10 +146,13 @@
                             @endphp
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td class="p-3">
-                                    <div class="font-semibold text-gray-800 dark:text-gray-100">{{ $bal->year }}</div>
-                                    @if($bal->year == $currentYear)
-                                        <span class="text-[10px] bg-violet-100 dark:bg-violet-500/30 text-violet-600 dark:text-violet-400 rounded-full px-2 py-0.5">Tahun Ini</span>
-                                    @endif
+                                    <div class="flex flex-col">
+                                        <div class="font-semibold text-gray-800 dark:text-gray-100">{{ $bal->year }}</div>
+                                        <div class="text-[11px] text-violet-500 font-medium">{{ $bal->leaveType->name ?? 'Umum' }}</div>
+                                        @if($bal->year == $currentYear)
+                                            <div class="mt-1"><span class="text-[9px] bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-full px-2 py-0.5">Tahun Ini</span></div>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="p-3 text-center font-medium">{{ $bal->total_days }}</td>
                                 <td class="p-3 text-center">

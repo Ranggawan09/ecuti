@@ -21,7 +21,7 @@ class LeaveRequestController extends Controller
     {
         $leaveRequests = LeaveRequest::with(['employee.user', 'leaveType'])
             ->whereNull('printed_at')
-            ->orderBy('updated_at', 'asc')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         return view('pages.kepegawaian.leave_requests.index', compact('leaveRequests'));
@@ -70,14 +70,14 @@ class LeaveRequestController extends Controller
             $noUrut = $noUrutTerakhir + 1;
 
             // Generate nomor surat otomatis
-            $bulanRomawi = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+            $bulanRomawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
             $bln = (int) now()->format('n');
             $nomorSurat = $noUrut . '/KPN.W14.U5/KP5.3/' . $bulanRomawi[$bln - 1] . '/' . $tahunIni;
 
             $leaveRequest->update([
-                'printed_at'   => now(),
-                'no_urut'      => $noUrut,
-                'nomor_surat'  => $nomorSurat,
+                'printed_at' => now(),
+                'no_urut' => $noUrut,
+                'nomor_surat' => $nomorSurat,
             ]);
         } else {
             // Sudah pernah dicetak sebelumnya, update printed_at saja
@@ -105,17 +105,17 @@ class LeaveRequestController extends Controller
     public function updateLetterNumber(Request $request, LeaveRequest $leaveRequest)
     {
         $validated = $request->validate([
-            'no_urut'     => 'required|integer|min:1',
+            'no_urut' => 'required|integer|min:1',
             'nomor_surat' => 'required|string|max:255',
         ]);
 
         $leaveRequest->update($validated);
 
         return response()->json([
-            'success'     => true,
-            'no_urut'     => $leaveRequest->no_urut,
+            'success' => true,
+            'no_urut' => $leaveRequest->no_urut,
             'nomor_surat' => $leaveRequest->nomor_surat,
-            'message'     => 'Nomor surat berhasil diperbarui.',
+            'message' => 'Nomor surat berhasil diperbarui.',
         ]);
     }
 
@@ -158,8 +158,7 @@ class LeaveRequestController extends Controller
                 ->setOption('defaultFont', 'Arial');
 
             return $pdf->download('leave-requests-' . date('Y-m-d') . '.pdf');
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('PDF Export Error (Leave Requests): ' . $e->getMessage());
 
             return redirect()->back()

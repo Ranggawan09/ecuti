@@ -19,7 +19,11 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::orderBy('created_at', 'desc')->get();
+        $users = User::orderBy('created_at', 'desc')->get()->map(function($user) {
+            $user->has_active_leave = $user->hasActiveLeaveRequests();
+            $user->has_pending_approvals = $user->hasPendingApprovals();
+            return $user;
+        });
         
         return view('pages.admin.users.index', compact('users'));
     }
@@ -102,7 +106,10 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('pages.admin.users.edit', compact('user'));
+        $isPegawaiLocked = $user->hasActiveLeaveRequests();
+        $isAtasanLocked = $user->hasPendingApprovals();
+        
+        return view('pages.admin.users.edit', compact('user', 'isPegawaiLocked', 'isAtasanLocked'));
     }
 
     /**
@@ -128,6 +135,28 @@ class UserController extends Controller
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
+        }
+
+        // Validasi perubahan role: tidak boleh menghapus role jika masih ada tanggungan
+        $currentRoles = $user->roles ?? [$user->role];
+        $newRoles = $validated['roles'];
+
+        if (in_array('pegawai', $currentRoles) && !in_array('pegawai', $newRoles)) {
+            if ($user->hasActiveLeaveRequests()) {
+                return back()->withErrors(['roles' => 'Role Pegawai tidak dapat dihapus karena user masih memiliki proses cuti berjalan.'])->withInput();
+            }
+        }
+
+        if (in_array('atasan_langsung', $currentRoles) && !in_array('atasan_langsung', $newRoles)) {
+            if ($user->hasPendingApprovals()) {
+                return back()->withErrors(['roles' => 'Role Atasan Langsung tidak dapat dihapus karena user masih memiliki tanggung jawab persetujuan cuti.'])->withInput();
+            }
+        }
+
+        if (in_array('atasan_tidak_langsung', $currentRoles) && !in_array('atasan_tidak_langsung', $newRoles)) {
+            if ($user->hasPendingApprovals()) {
+                return back()->withErrors(['roles' => 'Role Atasan Tidak Langsung tidak dapat dihapus karena user masih memiliki tanggung jawab persetujuan cuti.'])->withInput();
+            }
         }
 
         $primaryRole = $validated['roles'][0];
@@ -181,6 +210,18 @@ class UserController extends Controller
         if ($user->id === auth()->id()) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
+        }
+
+        // Check for active leave requests
+        if ($user->hasActiveLeaveRequests()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'User tidak dapat dihapus karena masih memiliki permohonan cuti yang sedang diproses atau ditangguhkan.');
+        }
+
+        // Check for pending approvals as a supervisor
+        if ($user->hasPendingApprovals()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'User tidak dapat dihapus karena masih memiliki tanggung jawab persetujuan cuti yang belum diselesaikan.');
         }
 
         $user->delete();

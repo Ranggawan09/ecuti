@@ -14,6 +14,10 @@ class UpdateProfileInformationForm extends Component
     public $photo;
     public $signature;
 
+    // Increase upload concurrency for faster uploads
+    protected $uploadConcurrency = 4;
+    protected $uploadChunkSize = 5120; // 5MB chunks
+
     protected $listeners = ['refresh' => '$refresh'];
 
     // Validation is handled by the Fortify action UpdateUserProfileInformation
@@ -60,6 +64,30 @@ class UpdateProfileInformationForm extends Component
         if (empty($this->state)) {
             $this->mount();
         }
+    }
+
+    public function updatedSignature()
+    {
+        Log::error('Signature upload callback', [
+            'signature' => $this->signature,
+            'is_uploaded' => $this->signature instanceof \Illuminate\Http\UploadedFile,
+        ]);
+
+        $this->validateOnly('signature', [
+            'signature' => ['nullable', 'image', 'mimes:png', 'max:1024'],
+        ]);
+    }
+
+    public function updatedPhoto()
+    {
+        Log::error('Photo upload callback', [
+            'photo' => $this->photo,
+            'is_uploaded' => $this->photo instanceof \Illuminate\Http\UploadedFile,
+        ]);
+
+        $this->validateOnly('photo', [
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:1024'],
+        ]);
     }
 
     public function updateProfileInformation()

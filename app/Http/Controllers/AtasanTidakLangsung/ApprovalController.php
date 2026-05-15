@@ -89,13 +89,6 @@ class ApprovalController extends Controller
 
             // Deduct leave balance
             $daysToDeduct = (int) $leaveRequest->total_days;
-            $balances = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
-                ->where(function($q) {
-                    $q->where('remaining_days', '>', 0)
-                      ->orWhere('carried_over_days', '>', 0);
-                })
-                ->orderBy('year', 'asc')
-                ->get();
             
             foreach ($balances as $balance) {
                 if ($daysToDeduct <= 0) break;
@@ -226,6 +219,7 @@ class ApprovalController extends Controller
             if ($newStatus === 'ditangguhkan' && $leaveRequest->is_penangguhan) {
                 $year = \Carbon\Carbon::parse($leaveRequest->start_date)->year;
                 $leaveBalance = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
+                    ->where('leave_type_id', $leaveRequest->leave_type_id)
                     ->where('year', $year)
                     ->first();
                 

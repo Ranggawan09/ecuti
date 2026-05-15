@@ -181,11 +181,12 @@
         </div>
 
         <div class="col-span-6 sm:col-span-3"
-             x-data="masaKerjaCalc(@js($this->state['tmt_masa_kerja'] ?? ''))"
+             x-data="masaKerjaCalc(@js($this->state['tmt_masa_kerja'] ?? ''), @js(now()->toDateString()))"
              x-init="init()">
             <x-label value="{{ __('Masa Kerja') }}" />
 
-            {{-- Input TMT Masa Kerja --}}
+            {{-- Input TMT Masa Kerja (Hanya untuk Admin) --}}
+            @if(auth()->user()->hasRole('admin'))
             <div class="mt-1">
                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">TMT Masa Kerja</label>
                 <input
@@ -197,6 +198,7 @@
                     class="block w-full border border-gray-300 dark:border-gray-700 rounded-md shadow-sm py-2 px-3 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
                 />
             </div>
+            @endif
 
             {{-- Hasil Kalkulasi Otomatis (read-only) --}}
             <div class="mt-2 flex items-center gap-2">
@@ -216,9 +218,10 @@
 
         @once
         <script>
-            function masaKerjaCalc(initialTmt) {
+            function masaKerjaCalc(initialTmt, simulatedNow) {
                 return {
                     tmt: initialTmt || '',
+                    sekarangSimulasi: simulatedNow || '',
                     tahun: 0,
                     bulan: 0,
                     init() {
@@ -231,7 +234,7 @@
                             return;
                         }
                         const tgl = new Date(this.tmt);
-                        const sekarang = new Date();
+                        const sekarang = this.sekarangSimulasi ? new Date(this.sekarangSimulasi) : new Date();
                         let tahun = sekarang.getFullYear() - tgl.getFullYear();
                         let bulan = sekarang.getMonth() - tgl.getMonth();
                         if (bulan < 0) {

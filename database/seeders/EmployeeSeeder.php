@@ -10,9 +10,22 @@ class EmployeeSeeder extends Seeder
 {
     public function run(): void
     {
-        $atasanLangsung = User::where('role', 'atasan_langsung')->first();
-        $atasanTidakLangsung = User::where('role', 'atasan_tidak_langsung')->first();
-        $pegawaiUsers = User::where('role', 'pegawai')->get();
+        // Find atasan with specific role, checking both 'role' and 'roles' columns
+        $atasanLangsung = User::where('role', 'atasan_langsung')
+            ->orWhereJsonContains('roles', 'atasan_langsung')
+            ->first();
+
+        $atasanTidakLangsung = User::where('role', 'atasan_tidak_langsung')
+            ->orWhereJsonContains('roles', 'atasan_tidak_langsung')
+            ->first();
+
+        // Fallback to first user if not found to avoid "id on null" error
+        $atasanLangsung = $atasanLangsung ?? User::first();
+        $atasanTidakLangsung = $atasanTidakLangsung ?? User::first();
+
+        $pegawaiUsers = User::where('role', 'pegawai')
+            ->orWhereJsonContains('roles', 'pegawai')
+            ->get();
 
         // Job positions and grades for variety
         $positions = [

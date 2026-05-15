@@ -15,11 +15,4 @@ class LeaveType extends Model
         'deduct_balance',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'deduct_balance' => 'boolean',
-            'max_days' => 'integer',
-        ];
-    }
 }

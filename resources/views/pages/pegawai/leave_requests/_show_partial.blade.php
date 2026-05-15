@@ -113,6 +113,27 @@
                             {{ $approval->approver->role ?? '-' }}
                         @endif
                     </div>
+                    <div class="mt-2">
+                        @php
+                            $approvalStatusClass = match($approval->status) {
+                                'disetujui' => 'bg-emerald-100 dark:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400',
+                                'tidak_disetujui' => 'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400',
+                                'ditangguhkan' => 'bg-orange-100 dark:bg-orange-500/30 text-orange-600 dark:text-orange-400',
+                                'perubahan' => 'bg-blue-100 dark:bg-blue-500/30 text-blue-600 dark:text-blue-400',
+                                default => 'bg-amber-100 dark:bg-amber-500/30 text-amber-600 dark:text-amber-400',
+                            };
+                            $approvalStatusText = match($approval->status) {
+                                'disetujui' => 'Disetujui',
+                                'tidak_disetujui' => 'Tidak Disetujui',
+                                'ditangguhkan' => 'Ditangguhkan',
+                                'perubahan' => 'Perubahan',
+                                default => 'Menunggu',
+                            };
+                        @endphp
+                        <span class="inline-flex font-medium rounded-full text-center px-2 py-0.5 text-[10px] {{ $approvalStatusClass }}">
+                            {{ $approvalStatusText }}
+                        </span>
+                    </div>
                     @if($approval->note)
                     <div class="mt-1 text-xs text-gray-600 dark:text-gray-400"><strong>Catatan:</strong> {{ $approval->note }}</div>
                     @endif

@@ -151,6 +151,11 @@
                                 </td>
                                 <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
                                     <div class="flex items-center gap-2">
+                                        <a :href="'/admin/leave-types/' + leaveType.id + '/quotas'" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-emerald-500" title="Atur Jatah">
+                                            <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
+                                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM14 14.5a.5.5 0 0 1-1 0V13a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1.5a.5.5 0 0 1-1 0V13a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v1.5z" />
+                                            </svg>
+                                        </a>
                                         <button @click="openModal(leaveType)" class="btn-sm bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-violet-500" title="Edit">
                                             <svg class="fill-current shrink-0" width="16" height="16" viewBox="0 0 16 16">
                                                 <path d="M11.7.3c-.4-.4-1-.4-1.4 0l-10 10c-.2.2-.3.4-.3.7v4c0 .6.4 1 1 1h4c.3 0 .5-.1.7-.3l10-10c.4-.4.4-1 0-1.4l-4-4ZM4.6 14H2v-2.6l6-6L10.6 8l-6 6ZM12 6.6 9.4 4 11 2.4 13.6 5 12 6.6Z" />

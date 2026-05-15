@@ -166,4 +166,39 @@ class Employee extends Model
 
         return $missing;
     }
+    /**
+     * Calculate available balance for a specific leave type
+     * (Remaining + Carried Over) - Pending Requests
+     */
+    public function getAvailableLeaveBalance(int $leaveTypeId): int
+    {
+        $currentYear = now()->year;
+        $leaveType = \App\Models\LeaveType::find($leaveTypeId);
+        
+        if (!$leaveType) return 0;
+
+        // Cuti Tahunan uses a 3-year pool (N, N-1, N-2)
+        if (str_contains(strtolower($leaveType->name), 'tahunan')) {
+            $years = [$currentYear, $currentYear - 1, $currentYear - 2];
+            $balances = $this->leaveBalances()
+                ->where('leave_type_id', $leaveTypeId)
+                ->whereIn('year', $years)
+                ->get();
+            $gross = $balances->sum('remaining_days');
+        } else {
+            // Other types usually use only the current year balance
+            $balance = $this->leaveBalances()
+                ->where('leave_type_id', $leaveTypeId)
+                ->where('year', $currentYear)
+                ->first();
+            $gross = $balance ? $balance->remaining_days : 0;
+        }
+
+        $pending = $this->leaveRequests()
+            ->where('leave_type_id', $leaveTypeId)
+            ->whereIn('status', ['menunggu_atasan_langsung', 'menunggu_atasan_tidak_langsung'])
+            ->sum('total_days');
+
+        return max(0, $gross - $pending);
+    }
 }

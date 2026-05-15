@@ -378,7 +378,7 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pilih Keputusan</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <button type="button" 
+                        <button type="button" id="btn_disetujui"
                                 class="decision-btn px-3 py-3 bg-emerald-50 border-2 border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-400 transition-all text-sm font-medium" 
                                 data-decision="disetujui">
                             <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -394,7 +394,7 @@
                             </svg>
                             Perubahan
                         </button>
-                        <button type="button" 
+                        <button type="button" id="btn_ditangguhkan"
                                 class="decision-btn px-3 py-3 bg-orange-50 border-2 border-orange-200 text-orange-700 rounded-lg hover:bg-orange-100 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-400 transition-all text-sm font-medium" 
                                 data-decision="ditangguhkan">
                             <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -417,7 +417,9 @@
                 <div id="catatanForm" style="display: none;">
                     <div id="catatanInfo" class="mb-3 p-3 rounded-lg text-sm"></div>
                     <div class="mb-4">
-                        <label for="catatan_approve" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Catatan (Opsional)</label>
+                        <label for="catatan_approve" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Catatan <span id="catatan_required_mark" style="display: none;" class="text-red-500">* (Wajib diisi jika ditangguhkan)</span>
+                        </label>
                         <textarea id="catatan_approve" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
                     </div>
                 </div>
@@ -535,6 +537,11 @@ function leaveRequestsTable() {
             document.getElementById('cuti_id').value = leaveId;
             document.getElementById('nama_pegawai').textContent = employeeName;
             document.getElementById('penangguhan_banner').style.display = isPenangguhan ? 'block' : 'none';
+
+            // Show/hide buttons based on penangguhan
+            document.getElementById('btn_disetujui').style.display = isPenangguhan ? 'none' : 'block';
+            document.getElementById('btn_ditangguhkan').style.display = isPenangguhan ? 'block' : 'none';
+
             document.getElementById('approvalModal').classList.remove('hidden');
 
             // Reset form
@@ -579,6 +586,9 @@ document.addEventListener('click', function(e) {
             infoEl.className = 'mb-3 p-3 rounded-lg text-sm ' + info.infoClass;
             document.getElementById('catatanForm').style.display = 'block';
             document.getElementById('rejectForm').style.display = 'none';
+
+            // Show/hide mandatory mark
+            document.getElementById('catatan_required_mark').style.display = (decision === 'ditangguhkan') ? 'inline' : 'none';
         }
 
         document.getElementById('submitApprovalBtn').style.display = 'block';
@@ -591,6 +601,15 @@ document.addEventListener('click', function(e) {
     if (e.target.id === 'submitApprovalBtn') {
         const cutiId = document.getElementById('cuti_id').value;
         const decision = e.target.dataset.decision;
+
+        // Validasi catatan wajib jika ditangguhkan
+        if (decision === 'ditangguhkan') {
+            const catatan = document.getElementById('catatan_approve').value;
+            if (!catatan || catatan.trim() === '') {
+                alert('Silakan isi catatan untuk menjelaskan alasan penangguhan.');
+                return;
+            }
+        }
 
         const labelMap = {
             'disetujui':    'menyetujui',
