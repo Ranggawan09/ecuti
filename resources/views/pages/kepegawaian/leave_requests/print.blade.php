@@ -144,14 +144,16 @@
 
     /* Bulan romawi */
     $rm      = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
-    $bmnCrt  = (int)\Carbon\Carbon::parse($leaveRequest->created_at)->format('n');
-    $rBln    = $rm[$bmnCrt - 1];
+    /* Tanggal surat = 1 hari sebelum tanggal mulai cuti */
+    $dtSurat    = \Carbon\Carbon::parse($leaveRequest->start_date)->subDay();
+    $bmnCrt     = (int)$dtSurat->format('n');
+    $rBln       = $rm[$bmnCrt - 1];
 
     /* Tanggal */
-    $tglSurat   = \Carbon\Carbon::parse($leaveRequest->created_at)->locale('id')->isoFormat('D MMMM YYYY');
+    $tglSurat   = $dtSurat->locale('id')->isoFormat('D MMMM YYYY');
     $tglMulai   = \Carbon\Carbon::parse($leaveRequest->start_date)->locale('id')->isoFormat('D MMMM YYYY');
     $tglSelesai = \Carbon\Carbon::parse($leaveRequest->end_date)->locale('id')->isoFormat('D MMMM YYYY');
-    $tahunSurat = \Carbon\Carbon::parse($leaveRequest->created_at)->format('Y');
+    $tahunSurat = $dtSurat->format('Y');
 
     /* Rentang tanggal cuti: "12-14 Oktober 2025" / "30 Sep - 2 Okt 2025" / "30 Des 2025 - 2 Jan 2026" */
     $dtMulai   = \Carbon\Carbon::parse($leaveRequest->start_date)->locale('id');
