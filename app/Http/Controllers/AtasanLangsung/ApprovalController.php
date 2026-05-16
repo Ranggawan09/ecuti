@@ -95,10 +95,21 @@ class ApprovalController extends Controller
             // Deduct leave balance if fully approved
             if (!$hasAtasanTidakLangsung) {
                 $leaveRequest->load('leaveType');
-                $balances = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
-                    ->where('leave_type_id', $leaveRequest->leave_type_id)
-                    ->where('year', now()->year)
-                    ->get();
+                $isAnnual = str_contains(strtolower($leaveRequest->leaveType->name), 'tahunan');
+                
+                if ($isAnnual) {
+                    // FIFO: Ambil jatah 3 tahun terakhir (N-2, N-1, N)
+                    $balances = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
+                        ->where('leave_type_id', $leaveRequest->leave_type_id)
+                        ->whereIn('year', [now()->year, now()->year - 1, now()->year - 2])
+                        ->orderBy('year', 'asc')
+                        ->get();
+                } else {
+                    $balances = \App\Models\LeaveBalance::where('employee_id', $leaveRequest->employee_id)
+                        ->where('leave_type_id', $leaveRequest->leave_type_id)
+                        ->where('year', now()->year)
+                        ->get();
+                }
 
                 $daysToDeduct = (int) $leaveRequest->total_days;
 
