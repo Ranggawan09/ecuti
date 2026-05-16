@@ -13,26 +13,6 @@ class UserSeeder extends Seeder
         $password = Hash::make('123');
 
         $users = [
-            // Atasan Langsung
-            [
-                'nama' => 'Atasan Langsung',
-                'nip' => '198001012005011001',
-                'email' => 'atasanlangsung@go.id',
-                'whatsapp' => '6281234567891',
-                'role' => 'atasan_langsung',
-                'roles' => ['atasan_langsung'],
-                'password' => $password,
-            ],
-            // Atasan Tidak Langsung
-            [
-                'nama' => 'Atasan Tidak Langsung',
-                'nip' => '197001011998031002',
-                'email' => 'atasantidaklangsung@go.id',
-                'whatsapp' => '6281234567892',
-                'role' => 'atasan_tidak_langsung',
-                'roles' => ['atasan_tidak_langsung'],
-                'password' => $password,
-            ],
             // Admin
             [
                 'nama' => 'Admin',
