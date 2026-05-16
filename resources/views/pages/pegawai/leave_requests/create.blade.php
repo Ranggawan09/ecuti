@@ -88,7 +88,7 @@
                                 <input type="checkbox" name="is_penangguhan" x-model="isPenangguhan"
                                     @change="calculateDays()" value="1"
                                     class="form-checkbox text-yellow-500 rounded border-gray-300 dark:border-gray-600 mt-0.5"
-                                    {{ old('is_penangguhan') ? 'checked' : '' }}>
+                                    :checked="isPenangguhan">
                                 <span class="ml-2 text-gray-700 dark:text-gray-300">
                                     <strong>Ajukan Penangguhan Sisa Cuti</strong><br>
                                     <span class="text-gray-500 dark:text-gray-400 text-xs">Centang opsi ini HANYA jika
@@ -206,14 +206,15 @@
     </div>
 
     <script>
+        const _isPenangguhan = {{ old('is_penangguhan') ? 'true' : 'false' }};
         function leaveRequestForm(leaveTypesData, publicHolidays) {
             return {
                 leaveTypes: leaveTypesData,
-                leaveTypeId: '{{ old('leave_type_id') }}',
+                leaveTypeId: "{{ old('leave_type_id') }}",
                 isCutiTahunan: false,
-                isPenangguhan: {{ old('is_penangguhan', 'false') }},
-                startDate: '{{ old('start_date') }}',
-                endDate: '{{ old('end_date') }}',
+                isPenangguhan: _isPenangguhan,
+                startDate: "{{ old('start_date') }}",
+                endDate: "{{ old('end_date') }}",
                 totalDays: 0,
                 calendarDays: 0,
                 workingDaysNote: '',

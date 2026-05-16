@@ -35,6 +35,7 @@ class LeaveRequest extends Model
         'calendar_days'   => 'integer',
         'skipped_weekend' => 'integer',
         'skipped_holiday' => 'integer',
+        'is_penangguhan'  => 'boolean',
     ];
 
     /**
