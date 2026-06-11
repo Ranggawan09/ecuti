@@ -11,13 +11,13 @@ class LeaveBalance extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id',
-        'leave_type_id',
-        'year',
-        'total_days',
-        'used_days',
-        'remaining_days',
-        'carried_over_days',
+        'employee_id', //id pegawai
+        'leave_type_id', //jenis cuti
+        'year', //tahun
+        'total_days', //total cuti yang diterima
+        'used_days', //cuti yang digunakan
+        'remaining_days', //sisa cuti
+        'carried_over_days', //ditangguhkan
     ];
 
     /**

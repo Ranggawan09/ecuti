@@ -135,7 +135,7 @@ class ApprovalController extends Controller
             DB::commit();
 
             // ========== NOTIFIKASI WHATSAPP ==========
-            // Kirim notif ke semua user kepegawaian
+            // Kirim notif ke pegawai & semua user kepegawaian
             $leaveRequest->load('employee.user', 'leaveType');
             $employee    = $leaveRequest->employee;
             $namePegawai = $employee->user->nama ?? '-';
@@ -143,8 +143,24 @@ class ApprovalController extends Controller
             $startDate   = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
             $endDate     = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
             $totalDays   = $leaveRequest->total_days;
+            $atlName     = Auth::user()->nama ?? 'Atasan Tidak Langsung';
 
             $wa = new WhatsappService();
+
+            // Kirim ke pegawai
+            $pegawaiUser = $employee->user;
+            if ($pegawaiUser && $pegawaiUser->whatsapp) {
+                $wa->sendMessage($pegawaiUser->whatsapp,
+                    "✅ *PENGAJUAN CUTI DISETUJUI SEPENUHNYA*\n\n"
+                    . "Halo {$namePegawai}, pengajuan cuti Anda telah disetujui sepenuhnya oleh Atasan Tidak Langsung ({$atlName}).\n\n"
+                    . "Detail Pengajuan:\n"
+                    . "Jenis Cuti: {$leaveType}\n"
+                    . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n\n"
+                    . "Silakan hubungi unit kepegawaian untuk proses cetak surat cuti resmi."
+                );
+            }
+
+            // Kirim ke kepegawaian
             $kepegawaianUsers = User::where('role', 'kepegawaian')->get();
             foreach ($kepegawaianUsers as $kpg) {
                 if ($kpg->whatsapp) {
@@ -253,10 +269,13 @@ class ApprovalController extends Controller
             DB::commit();
 
             // ========== NOTIFIKASI WHATSAPP ==========
-            // Kirim notif ke pegawai bahwa cuti ditolak/ditangguhkan
+            // Kirim notif ke pegawai bahwa cuti ditolak/ditangguhkan/direvisi
             $leaveRequest->load('employee.user', 'leaveType');
             $employee    = $leaveRequest->employee;
             $pegawaiUser = $employee->user;
+            $namePegawai = $pegawaiUser->nama ?? '-';
+            $atlName     = Auth::user()->nama ?? 'Atasan Tidak Langsung';
+
             if ($pegawaiUser && $pegawaiUser->whatsapp) {
                 $wa          = new WhatsappService();
                 $leaveType   = $leaveRequest->leaveType->name ?? 'Cuti';
@@ -272,6 +291,8 @@ class ApprovalController extends Controller
 
                 $wa->sendMessage($pegawaiUser->whatsapp,
                     "❌ *STATUS PENGAJUAN CUTI DIPERBARUI*\n\n"
+                    . "Halo {$namePegawai}, status pengajuan cuti Anda telah diperbarui oleh Atasan Tidak Langsung ({$atlName}).\n\n"
+                    . "Detail Pengajuan:\n"
                     . "Jenis Cuti: {$leaveType}\n"
                     . "Tanggal: {$startDate} s/d {$endDate}\n"
                     . "Status: {$statusLabel}\n"

@@ -386,14 +386,7 @@
                             </svg>
                             Disetujui
                         </button>
-                        <button type="button" 
-                                class="decision-btn px-3 py-3 bg-gray-50 border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-100 dark:bg-gray-700/50 dark:border-gray-600 dark:text-gray-300 transition-all text-sm font-medium" 
-                                data-decision="perubahan">
-                            <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                            </svg>
-                            Perubahan
-                        </button>
+
                         <button type="button" id="btn_ditangguhkan"
                                 class="decision-btn px-3 py-3 bg-orange-50 border-2 border-orange-200 text-orange-700 rounded-lg hover:bg-orange-100 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-400 transition-all text-sm font-medium" 
                                 data-decision="ditangguhkan">

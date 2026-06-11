@@ -150,6 +150,22 @@ class ApprovalController extends Controller
             $startDate   = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
             $endDate     = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
             $totalDays   = $leaveRequest->total_days;
+            $alName      = Auth::user()->nama ?? 'Atasan Langsung';
+
+            // Jika tidak ada ATL, berarti pengajuan disetujui sepenuhnya (final). Kirim notif ke pegawai.
+            if (!$hasAtasanTidakLangsung) {
+                $pegawaiUser = $employee->user;
+                if ($pegawaiUser && $pegawaiUser->whatsapp) {
+                    $wa->sendMessage($pegawaiUser->whatsapp,
+                        "✅ *PENGAJUAN CUTI DISETUJUI SEPENUHNYA*\n\n"
+                        . "Halo {$namePegawai}, pengajuan cuti Anda telah disetujui sepenuhnya oleh Atasan Langsung ({$alName}).\n\n"
+                        . "Detail Pengajuan:\n"
+                        . "Jenis Cuti: {$leaveType}\n"
+                        . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n\n"
+                        . "Silakan hubungi unit kepegawaian untuk proses cetak surat cuti resmi."
+                    );
+                }
+            }
 
             if ($hasAtasanTidakLangsung) {
                 // Notif ke atasan tidak langsung
@@ -251,11 +267,17 @@ class ApprovalController extends Controller
             // Update status leave request
             $hasAtasanTidakLangsung = $leaveRequest->employee->atasan_tidak_langsung_id != null;
             
+            $isForwardedToAtl = false;
+
             if ($newStatus === 'ditangguhkan' && $leaveRequest->is_penangguhan) {
                 $finalStatus = $hasAtasanTidakLangsung ? 'menunggu_atasan_tidak_langsung' : 'ditangguhkan';
                 $leaveRequest->update([
                     'status' => $finalStatus
                 ]);
+
+                if ($finalStatus === 'menunggu_atasan_tidak_langsung') {
+                    $isForwardedToAtl = true;
+                }
 
                 // Apply penangguhan logic if fully approved (no atasan tidak langsung)
                 if ($finalStatus === 'ditangguhkan') {
@@ -283,31 +305,61 @@ class ApprovalController extends Controller
             DB::commit();
 
             // ========== NOTIFIKASI WHATSAPP ==========
-            // Kirim notif ke pegawai bahwa cuti ditolak/ditangguhkan
-            $leaveRequest->load('employee.user', 'leaveType');
+            // Kirim notif ke pegawai bahwa cuti ditolak/ditangguhkan/direvisi
+            $leaveRequest->load('employee.user', 'leaveType', 'employee.atasanTidakLangsung');
             $employee    = $leaveRequest->employee;
             $pegawaiUser = $employee->user;
+            $namePegawai = $pegawaiUser->nama ?? '-';
+            $leaveType   = $leaveRequest->leaveType->name ?? 'Cuti';
+            $startDate   = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
+            $endDate     = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
+            $totalDays   = $leaveRequest->total_days;
+            $alName      = Auth::user()->nama ?? 'Atasan Langsung';
+
             if ($pegawaiUser && $pegawaiUser->whatsapp) {
                 $wa          = new WhatsappService();
-                $leaveType   = $leaveRequest->leaveType->name ?? 'Cuti';
-                $startDate   = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
-                $endDate     = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
-                $statusLabel = match ($newStatus) {
-                    'tidak_disetujui' => 'Tidak Disetujui ❌',
-                    'ditangguhkan'    => 'Ditangguhkan ⏸️',
-                    'perubahan'       => 'Perlu Perubahan 🔄',
-                    default           => $newStatus,
-                };
-                $catatan = $request->alasan_penolakan ?? $request->catatan ?? '-';
 
-                $wa->sendMessage($pegawaiUser->whatsapp,
-                    "❌ *STATUS PENGAJUAN CUTI DIPERBARUI*\n\n"
-                    . "Jenis Cuti: {$leaveType}\n"
-                    . "Tanggal: {$startDate} s/d {$endDate}\n"
-                    . "Status: {$statusLabel}\n"
-                    . "Catatan: {$catatan}\n\n"
-                    . "Silakan login ke aplikasi untuk info lebih lanjut."
-                );
+                if ($isForwardedToAtl) {
+                    // Penangguhan cuti disetujui AL, menunggu ATL
+                    $wa->sendMessage($pegawaiUser->whatsapp,
+                        "⏸️ *PENGAJUAN PENANGGUHAN DISETUJUI AL*\n\n"
+                        . "Halo {$namePegawai}, pengajuan penangguhan cuti Anda telah disetujui oleh Atasan Langsung ({$alName}) dan saat ini sedang menunggu persetujuan dari Atasan Tidak Langsung.\n\n"
+                        . "Detail Pengajuan:\n"
+                        . "Jenis Cuti: {$leaveType}\n"
+                        . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)"
+                    );
+
+                    // Kirim notifikasi ke ATL
+                    $atl = $employee->atasanTidakLangsung;
+                    if ($atl && $atl->whatsapp) {
+                        $wa->sendMessage($atl->whatsapp,
+                            "⏸️ *PENGAJUAN PENANGGUHAN CUTI MENUNGGU PERSETUJUAN ANDA*\n\n"
+                            . "Pegawai: {$namePegawai}\n"
+                            . "Jenis Cuti: {$leaveType}\n"
+                            . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n\n"
+                            . "Pengajuan penangguhan ini sudah disetujui atasan langsung. Silakan login untuk memproses."
+                        );
+                    }
+                } else {
+                    $statusLabel = match ($newStatus) {
+                        'tidak_disetujui' => 'Tidak Disetujui ❌',
+                        'ditangguhkan'    => 'Ditangguhkan ⏸️',
+                        'perubahan'       => 'Perlu Perubahan 🔄',
+                        default           => $newStatus,
+                    };
+                    $catatan = $request->alasan_penolakan ?? $request->catatan ?? '-';
+
+                    $wa->sendMessage($pegawaiUser->whatsapp,
+                        "❌ *STATUS PENGAJUAN CUTI DIPERBARUI*\n\n"
+                        . "Halo {$namePegawai}, status pengajuan cuti Anda telah diperbarui oleh Atasan Langsung ({$alName}).\n\n"
+                        . "Detail Pengajuan:\n"
+                        . "Jenis Cuti: {$leaveType}\n"
+                        . "Tanggal: {$startDate} s/d {$endDate}\n"
+                        . "Status: {$statusLabel}\n"
+                        . "Catatan: {$catatan}\n\n"
+                        . "Silakan login ke aplikasi untuk info lebih lanjut."
+                    );
+                }
             }
             // =========================================
 
