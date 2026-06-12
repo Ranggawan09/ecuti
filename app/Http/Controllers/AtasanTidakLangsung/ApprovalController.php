@@ -147,6 +147,8 @@ class ApprovalController extends Controller
 
             $wa = new WhatsappService();
 
+            $loginUrl = route('login');
+
             // Kirim ke pegawai
             $pegawaiUser = $employee->user;
             if ($pegawaiUser && $pegawaiUser->whatsapp) {
@@ -156,7 +158,9 @@ class ApprovalController extends Controller
                     . "Detail Pengajuan:\n"
                     . "Jenis Cuti: {$leaveType}\n"
                     . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n\n"
-                    . "Silakan hubungi unit kepegawaian untuk proses cetak surat cuti resmi."
+                    . "Silakan hubungi unit kepegawaian untuk proses cetak surat cuti resmi.\n\n"
+                    . "Silakan login ke aplikasi:\n"
+                    . $loginUrl
                 );
             }
 
@@ -169,7 +173,8 @@ class ApprovalController extends Controller
                         . "Pegawai: {$namePegawai}\n"
                         . "Jenis Cuti: {$leaveType}\n"
                         . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n\n"
-                        . "Pengajuan cuti telah disetujui oleh atasan langsung dan atasan tidak langsung. Silakan login untuk mencetak surat cuti."
+                        . "Pengajuan cuti telah disetujui oleh atasan langsung dan atasan tidak langsung. Silakan login untuk mencetak surat cuti:\n"
+                        . $loginUrl
                     );
                 }
             }
@@ -288,6 +293,7 @@ class ApprovalController extends Controller
                     default           => $newStatus,
                 };
                 $catatan = $request->alasan_penolakan ?? $request->catatan ?? '-';
+                $loginUrl = route('login');
 
                 $wa->sendMessage($pegawaiUser->whatsapp,
                     "❌ *STATUS PENGAJUAN CUTI DIPERBARUI*\n\n"
@@ -297,7 +303,8 @@ class ApprovalController extends Controller
                     . "Tanggal: {$startDate} s/d {$endDate}\n"
                     . "Status: {$statusLabel}\n"
                     . "Catatan: {$catatan}\n\n"
-                    . "Silakan login ke aplikasi untuk info lebih lanjut."
+                    . "Silakan login ke aplikasi untuk memproses:\n"
+                    . $loginUrl
                 );
             }
             // =========================================

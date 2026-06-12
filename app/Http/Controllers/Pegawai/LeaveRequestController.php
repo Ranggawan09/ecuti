@@ -183,12 +183,14 @@ class LeaveRequestController extends Controller
             $totalDays = $leaveRequest->total_days;
             $namePegawai = $employee->user->nama ?? '-';
 
+            $loginUrl = route('login');
             $message = "📋 *PENGAJUAN CUTI BARU*\n\n"
                 . "Pegawai: {$namePegawai}\n"
                 . "Jenis Cuti: {$leaveType}\n"
                 . "Tanggal: {$startDate} s/d {$endDate} ({$totalDays} hari)\n"
                 . "Alasan: {$leaveRequest->reason}\n\n"
-                . "Silakan login ke aplikasi untuk memproses pengajuan ini.";
+                . "Silakan login ke aplikasi untuk memproses pengajuan ini:\n"
+                . $loginUrl;
 
             $wa->sendMessage($atasanLangsung->whatsapp, $message);
         }
@@ -306,6 +308,7 @@ class LeaveRequestController extends Controller
         $startDate = \Carbon\Carbon::parse($leaveRequest->start_date)->format('d/m/Y');
         $endDate = \Carbon\Carbon::parse($leaveRequest->end_date)->format('d/m/Y');
 
+        $loginUrl = route('login');
         if ($validated['status'] === 'menunggu_atasan_tidak_langsung') {
             $atasan = $employee->atasanTidakLangsung;
             if ($atasan && $atasan->whatsapp) {
@@ -314,7 +317,9 @@ class LeaveRequestController extends Controller
                     "🔄 *REVISI PENGAJUAN CUTI*\n\n"
                     . "Pegawai: {$namePegawai}\n"
                     . "Tanggal: {$startDate} s/d {$endDate}\n\n"
-                    . "Pengajuan cuti telah direvisi dan perlu ditinjau ulang oleh Anda."
+                    . "Pengajuan cuti telah direvisi dan perlu ditinjau ulang oleh Anda.\n"
+                    . "Silakan login ke aplikasi:\n"
+                    . $loginUrl
                 );
             }
         } else {
@@ -325,7 +330,9 @@ class LeaveRequestController extends Controller
                     "🔄 *REVISI PENGAJUAN CUTI*\n\n"
                     . "Pegawai: {$namePegawai}\n"
                     . "Tanggal: {$startDate} s/d {$endDate}\n\n"
-                    . "Pengajuan cuti telah direvisi dan perlu ditinjau ulang oleh Anda."
+                    . "Pengajuan cuti telah direvisi dan perlu ditinjau ulang oleh Anda.\n"
+                    . "Silakan login ke aplikasi:\n"
+                    . $loginUrl
                 );
             }
         }
