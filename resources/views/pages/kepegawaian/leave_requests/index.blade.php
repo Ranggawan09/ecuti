@@ -49,7 +49,7 @@
                         <ul>
                             <li>
                                 <a class="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex items-center py-1 px-3"
-                                    href="{{ route('kepegawaian.leave-requests.export', ['format' => 'excel']) }}"
+                                    href="{{ route('kepegawaian.leave-requests.export', ['format' => 'excel', 'type' => 'active']) }}"
                                     @click="open = false">
                                     <svg class="w-4 h-4 fill-current text-green-500 shrink-0 mr-2" viewBox="0 0 16 16">
                                         <path
@@ -60,7 +60,7 @@
                             </li>
                             <li>
                                 <a class="font-medium text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-200 flex items-center py-1 px-3"
-                                    href="{{ route('kepegawaian.leave-requests.export', ['format' => 'pdf']) }}"
+                                    href="{{ route('kepegawaian.leave-requests.export', ['format' => 'pdf', 'type' => 'active']) }}"
                                     @click="open = false">
                                     <svg class="w-4 h-4 fill-current text-red-500 shrink-0 mr-2" viewBox="0 0 16 16">
                                         <path

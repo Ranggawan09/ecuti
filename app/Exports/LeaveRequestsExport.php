@@ -11,13 +11,28 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class LeaveRequestsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
-    /**
-     * @return \Illuminate\Support\Collection
-     */
+    protected $type;
+
+    public function __construct($type = null)
+    {
+        $this->type = $type;
+    }
+
     public function collection()
     {
-        return LeaveRequest::with(['employee.user', 'leaveType'])
-            ->orderBy('created_at', 'desc')
+        $query = LeaveRequest::with(['employee.user', 'leaveType']);
+
+        if ($this->type === 'history') {
+            return $query->whereNotNull('printed_at')
+                ->latest('printed_at')
+                ->get();
+        } elseif ($this->type === 'active') {
+            return $query->whereNull('printed_at')
+                ->orderBy('updated_at', 'desc')
+                ->get();
+        }
+
+        return $query->orderBy('created_at', 'desc')
             ->get();
     }
 

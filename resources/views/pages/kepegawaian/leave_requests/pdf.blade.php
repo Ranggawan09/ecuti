@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Data Cuti Pegawai - {{ now()->format('d/m/Y') }}</title>
+    <title>{{ $title ?? 'Data Cuti Pegawai' }} - {{ now()->format('d/m/Y') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -81,7 +81,7 @@
     </style>
 </head>
 <body>
-    <h1>DATA CUTI PEGAWAI</h1>
+    <h1>{{ $title ?? 'DATA CUTI PEGAWAI' }}</h1>
     <div class="subtitle">Dicetak pada: {{ now()->format('d F Y, H:i') }} WIB</div>
 
     <table>

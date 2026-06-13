@@ -47,12 +47,13 @@ class LeaveRequestController extends Controller
     public function export(Request $request)
     {
         $format = $request->get('format', 'excel');
+        $type = $request->get('type');
 
         if ($format === 'pdf') {
-            return $this->exportPdf();
+            return $this->exportPdf($type);
         }
 
-        return $this->exportExcel();
+        return $this->exportExcel($type);
     }
 
     /**
@@ -135,29 +136,45 @@ class LeaveRequestController extends Controller
     /**
      * Export to Excel
      */
-    private function exportExcel()
+    private function exportExcel($type = null)
     {
-        return Excel::download(new LeaveRequestsExport, 'leave-requests-' . date('Y-m-d') . '.xlsx');
+        $filename = ($type === 'history' ? 'riwayat-cuti-pegawai-' : 'data-cuti-pegawai-') . date('Y-m-d') . '.xlsx';
+        return Excel::download(new LeaveRequestsExport($type), $filename);
     }
 
-    private function exportPdf()
+    private function exportPdf($type = null)
     {
         try {
             // Increase memory limit and execution time for PDF generation
             ini_set('memory_limit', '512M');
             ini_set('max_execution_time', '300');
 
-            $leaveRequests = LeaveRequest::with(['employee.user', 'leaveType'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $query = LeaveRequest::with(['employee.user', 'leaveType']);
 
-            $pdf = Pdf::loadView('pages.kepegawaian.leave_requests.pdf', compact('leaveRequests'))
+            if ($type === 'history') {
+                $title = 'RIWAYAT CUTI PEGAWAI';
+                $leaveRequests = $query->whereNotNull('printed_at')
+                    ->latest('printed_at')
+                    ->get();
+            } elseif ($type === 'active') {
+                $title = 'DATA CUTI PEGAWAI';
+                $leaveRequests = $query->whereNull('printed_at')
+                    ->orderBy('updated_at', 'desc')
+                    ->get();
+            } else {
+                $title = 'DATA CUTI PEGAWAI';
+                $leaveRequests = $query->orderBy('created_at', 'desc')
+                    ->get();
+            }
+
+            $pdf = Pdf::loadView('pages.kepegawaian.leave_requests.pdf', compact('leaveRequests', 'title'))
                 ->setPaper('a4', 'landscape')
                 ->setOption('isHtml5ParserEnabled', true)
                 ->setOption('isRemoteEnabled', true)
                 ->setOption('defaultFont', 'Arial');
 
-            return $pdf->download('leave-requests-' . date('Y-m-d') . '.pdf');
+            $filename = ($type === 'history' ? 'riwayat-cuti-pegawai-' : 'data-cuti-pegawai-') . date('Y-m-d') . '.pdf';
+            return $pdf->download($filename);
         } catch (\Exception $e) {
             Log::error('PDF Export Error (Leave Requests): ' . $e->getMessage());
 
